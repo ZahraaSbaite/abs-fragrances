@@ -495,6 +495,41 @@
 .cart-total-label { font-family:var(--sans); font-size:.72rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); }
 .cart-total-val   { font-family:var(--serif2); font-size:1.3rem; color:var(--navy); font-style:italic; }
 
+/* ─── CHECKOUT FORM (inside cart drawer) ─── */
+.checkout-form { display:flex; flex-direction:column; gap:1.3rem; }
+.checkout-form label {
+  display:flex; flex-direction:column; gap:.55rem;
+  font-family:var(--sans); font-size:.65rem; font-weight:500;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--muted);
+}
+.checkout-form input, .checkout-form textarea {
+  font-family:var(--sans); font-size:.85rem; font-weight:400;
+  letter-spacing:normal; text-transform:none; color:var(--navy);
+  padding:.8rem 1rem; border:1px solid rgba(22,56,70,.18);
+  background:var(--white); outline:none; width:100%; box-sizing:border-box;
+  transition:border-color .2s, box-shadow .2s;
+}
+.checkout-form textarea { min-height:80px; resize:vertical; font-family:var(--sans); }
+.checkout-form input:focus, .checkout-form textarea:focus {
+  border-color:var(--gold); box-shadow:0 0 0 3px rgba(196,162,112,.12);
+}
+.checkout-submit-btn {
+  font-family:var(--sans); font-size:.75rem; font-weight:500;
+  letter-spacing:.18em; text-transform:uppercase;
+  background:var(--gold); color:var(--white); border:none;
+  padding:.9rem 2rem; cursor:pointer; transition:all .3s var(--ease);
+  margin-top:.4rem;
+}
+.checkout-submit-btn:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 25px rgba(196,162,112,.35); }
+.checkout-submit-btn:disabled { opacity:.6; cursor:default; transform:none; box-shadow:none; }
+.checkout-back-btn {
+  font-family:var(--sans); font-size:.7rem; font-weight:400;
+  letter-spacing:.12em; text-transform:uppercase; text-align:center;
+  background:none; color:var(--muted); border:none; cursor:pointer;
+  padding:.5rem; transition:color .2s;
+}
+.checkout-back-btn:hover { color:var(--gold); }
+
 /* ─── RESPONSIVE ─── */
 @media(max-width:1024px){
   .hero { grid-template-columns:1fr; padding:7rem 2.5rem 3rem; text-align:center; }
