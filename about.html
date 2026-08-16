@@ -31,6 +31,9 @@
 <div class="mobile-nav-bg" id="mobileNavBg"></div>
 <div class="mobile-nav" id="mobileNav">
   <button class="mobile-nav-close" id="mobileNavClose">✕</button>
+  <form class="mobile-nav-search" id="mobileNavSearchForm">
+    <input type="search" id="mobileNavSearchInput" placeholder="Search perfumes…" />
+  </form>
   <a href="index.html">Home</a><a href="about.html">About Us</a><a href="all-perfumes.html">All Perfumes</a><a href="categories.html">Categories</a><a href="contact.html">Contact Us</a>
 </div>
 
@@ -122,6 +125,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   mobileNav?.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileNav));
   document.getElementById('mobileNavClose')?.addEventListener('click', closeMobileNav);
   mobileNavBg?.addEventListener('click', closeMobileNav);
+  document.getElementById('mobileNavSearchForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const q = document.getElementById('mobileNavSearchInput')?.value.trim();
+    if (q) window.location.href = 'all-perfumes.html?q=' + encodeURIComponent(q);
+  });
   const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.1});
   document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
 });

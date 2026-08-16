@@ -137,6 +137,12 @@ body {
 .mobile-nav.open { transform: translateX(0); }
 .mobile-nav-close { align-self: flex-end; background: none; border: none; font-size: 1.3rem; color: var(--navy); cursor: pointer; margin-bottom: .5rem; padding: 0; }
 .mobile-nav-close:hover { color: var(--gold); }
+.mobile-nav-search input {
+  width: 100%; box-sizing: border-box;
+  padding: .7rem .9rem; border: 1px solid rgba(22,56,70,.18);
+  background: var(--white); font-family: var(--sans); font-size: .82rem; color: var(--navy); outline: none;
+}
+.mobile-nav-search input:focus { border-color: var(--gold); }
 .mobile-nav a { font-family: var(--sans); font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; text-decoration: none; color: var(--navy); opacity: .7; }
 .mobile-nav a:hover { opacity: 1; color: var(--gold); }
 .mobile-nav-divider { height: 1px; background: rgba(196,162,112,.2); }
@@ -234,6 +240,7 @@ footer { background: #0d2230; padding: 4rem 4rem 2rem; }
 @media(max-width:768px){
   .navbar,.navbar.scrolled{padding:1rem 1.5rem}
   .nav-links{display:none}
+  .nav-links-full{display:none}
   .nav-cta-btn{display:none}
   .hamburger{display:flex}
   .trust-divider{display:none}

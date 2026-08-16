@@ -178,6 +178,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   mobileNav?.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileNav));
   document.getElementById('mobileNavClose')?.addEventListener('click', closeMobileNav);
   mobileNavBg?.addEventListener('click', closeMobileNav);
+  document.getElementById('mobileNavSearchForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const q = document.getElementById('mobileNavSearchInput')?.value.trim();
+    if (q) window.location.href = 'all-perfumes.html?q=' + encodeURIComponent(q);
+  });
 
   // Scroll animations
   const observer = new IntersectionObserver(entries => {
