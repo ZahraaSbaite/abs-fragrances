@@ -433,17 +433,23 @@ async function saveProfile() {
 
 /* ── VIEW ROUTER ── */
 let currentView = 'overview';
+let viewToken = 0; // bumped on every switchView call; a stale (superseded) call's render is dropped
 const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', profile: 'Admin Profile' };
 async function switchView(view) {
+  const myToken = ++viewToken;
   currentView = view;
   document.querySelectorAll('.sidebar-link[data-view]').forEach(l => l.classList.toggle('active', l.dataset.view === view));
   document.getElementById('topbarTitle').textContent = VIEW_TITLES[view] || view;
   orderFilterStatus = ''; prodGenderFilter = '';
+  // Immediate feedback — matters most when the backend is slow to wake up (Render free tier).
+  if (view !== 'profile') {
+    document.getElementById('dashContent').innerHTML = '<div style="padding:4rem;text-align:center;color:var(--muted);font-family:var(--sans);font-size:.85rem">Loading…</div>';
+  }
 
-  if (view === 'overview') { await Promise.all([loadOrdersData(), loadProductsData()]); renderOverview(); }
-  else if (view === 'orders') { await loadOrdersData(); renderOrders(); }
-  else if (view === 'products') { await loadProductsData(); renderProducts(); }
-  else if (view === 'addProduct') { await loadProductsData(); openProductForm(); switchView('products'); return; }
+  if (view === 'overview') { await Promise.all([loadOrdersData(), loadProductsData()]); if (myToken !== viewToken) return; renderOverview(); }
+  else if (view === 'orders') { await loadOrdersData(); if (myToken !== viewToken) return; renderOrders(); }
+  else if (view === 'products') { await loadProductsData(); if (myToken !== viewToken) return; renderProducts(); }
+  else if (view === 'addProduct') { await loadProductsData(); if (myToken !== viewToken) return; openProductForm(); switchView('products'); return; }
   else if (view === 'profile') { renderProfile(); }
 }
 
