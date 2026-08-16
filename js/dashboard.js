@@ -38,7 +38,7 @@ async function loadOrdersData() {
   return ordersCache;
 }
 async function loadProductsData() {
-  await initProducts(); // PRODUCTS / BRANDS come from products.js, fetched from the API
+  await initProducts(true); // force: the dashboard always needs live data, not the cached-once copy
   return Object.values(PRODUCTS);
 }
 function refreshPendingBadge() {
@@ -105,7 +105,10 @@ function openProductForm(existingId) {
   const overlay = document.getElementById('productFormOverlay');
   ['fpId', 'fpName', 'fpShortDesc', 'fpFullDesc', 'fpNotes', 'fpBadge', 'fpPhoto', 'fpPrice'].forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('fpGender').value = 'Men'; document.getElementById('fpIntensity').value = 'Moderate';
-  document.getElementById('fpBrand').value = ''; document.getElementById('fpStock').value = 'true';
+  const brandSel = document.getElementById('fpBrand');
+  brandSel.innerHTML = '<option value="">Select brand…</option>' +
+    Object.values(BRANDS).map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  brandSel.value = ''; document.getElementById('fpStock').value = 'true';
   document.getElementById('fpError').style.display = 'none';
   document.getElementById('photoPreviewImg').style.display = 'none';
   document.getElementById('photoPlaceholder').style.display = 'flex';
@@ -369,6 +372,165 @@ function applyProdSearch() {
   const el = document.getElementById('prodCount'); if (el) el.textContent = shown + ' perfumes';
 }
 
+/* ── MANAGE BRANDS ── */
+function renderBrands() {
+  const brands = Object.values(BRANDS);
+  const html = `
+    <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05)">
+      <div class="admin-filter-bar" style="justify-content:space-between">
+        <span style="font-family:var(--sans);font-size:.72rem;color:var(--muted)">${brands.length} brands</span>
+        <button class="btn btn-gold btn-sm" onclick="openBrandForm()">+ Add Brand</button>
+      </div>
+      <table class="data-table">
+        <thead><tr><th style="width:60px">Logo</th><th>Name</th><th>ID</th><th>Perfumes</th><th>Actions</th></tr></thead>
+        <tbody>${renderBrandRows(brands)}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('dashContent').innerHTML = html;
+}
+function renderBrandRows(brands) {
+  if (!brands.length) return `<tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--muted)">No brands yet.</td></tr>`;
+  return brands.map(b => {
+    const count = Object.values(PRODUCTS).filter(p => p.brand === b.id).length;
+    return `<tr>
+      <td style="font-size:1.4rem">${b.logo || '🧴'}</td>
+      <td style="font-weight:400;font-size:.85rem;color:var(--navy)">${esc(b.name)}</td>
+      <td style="font-size:.75rem;color:var(--muted)">${esc(b.id)}</td>
+      <td style="font-size:.78rem">${count}</td>
+      <td><div style="display:flex;gap:.4rem">
+        <button class="btn btn-outline btn-sm" onclick="openBrandForm('${b.id}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBrand('${b.id}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Del
+        </button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function openBrandForm(existingId) {
+  document.getElementById('bfError').style.display = 'none';
+  const idInput = document.getElementById('bfIdInput');
+  if (existingId) {
+    const b = BRANDS[existingId];
+    document.getElementById('brandFormTitle').textContent = 'Edit Brand';
+    document.getElementById('bfId').value = existingId;
+    idInput.value = existingId; idInput.disabled = true;
+    document.getElementById('bfName').value = b?.name || '';
+    document.getElementById('bfLogo').value = b?.logo || '';
+  } else {
+    document.getElementById('brandFormTitle').textContent = 'Add New Brand';
+    document.getElementById('bfId').value = '';
+    idInput.value = ''; idInput.disabled = false;
+    document.getElementById('bfName').value = '';
+    document.getElementById('bfLogo').value = '';
+  }
+  document.getElementById('brandFormOverlay').classList.add('open');
+}
+function closeBrandForm() { document.getElementById('brandFormOverlay').classList.remove('open'); }
+
+async function saveBrandForm() {
+  const errEl = document.getElementById('bfError'); errEl.style.display = 'none';
+  const existingId = document.getElementById('bfId').value;
+  const idVal = document.getElementById('bfIdInput').value.trim();
+  const name = document.getElementById('bfName').value.trim();
+  const logo = document.getElementById('bfLogo').value.trim();
+
+  if (!name) { errEl.textContent = 'Brand name is required'; errEl.style.display = 'block'; return; }
+  if (!existingId && !idVal) { errEl.textContent = 'Brand ID is required'; errEl.style.display = 'block'; return; }
+
+  try {
+    let res;
+    if (existingId) {
+      res = await fetch(`${API_BASE}/products/brands/${existingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ name, logo }),
+      });
+    } else {
+      res = await fetch(`${API_BASE}/products/brands`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ id: idVal, name, logo }),
+      });
+    }
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Failed to save brand'; errEl.style.display = 'block'; return; }
+
+    showToast('"' + name + '" ' + (existingId ? 'updated' : 'added') + '!', 'success');
+    closeBrandForm();
+    await loadProductsData();
+    if (currentView === 'brands') renderBrands();
+  } catch (err) {
+    errEl.textContent = 'Could not reach the server.'; errEl.style.display = 'block';
+  }
+}
+
+function deleteBrand(id) {
+  const b = BRANDS[id]; const name = b?.name || id;
+  const count = Object.values(PRODUCTS).filter(p => p.brand === id).length;
+  const warning = count > 0 ? ` ${count} perfume(s) using this brand will keep their listing but lose their brand tag.` : '';
+  confirm2('Delete "' + name + '"?', 'This brand will be permanently removed.' + warning, async () => {
+    try {
+      const res = await fetch(`${API_BASE}/products/brands/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error || 'Failed to delete brand', 'error'); return; }
+      showToast('"' + name + '" deleted');
+      await loadProductsData();
+      renderBrands();
+    } catch (err) { showToast('Could not reach the server.', 'error'); }
+  });
+}
+
+/* ── CUSTOMER REVIEWS ── */
+let reviewsCache = [];
+async function loadReviewsData() {
+  reviewsCache = await Reviews.fetchAll();
+  return reviewsCache;
+}
+function renderReviews() {
+  const html = `
+    <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05)">
+      <div class="admin-filter-bar">
+        <span style="font-family:var(--sans);font-size:.72rem;color:var(--muted)">${reviewsCache.length} reviews</span>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Author</th><th>Stars</th><th>Review</th><th>Product</th><th>Actions</th></tr></thead>
+        <tbody>${renderReviewRows(reviewsCache)}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('dashContent').innerHTML = html;
+}
+function renderReviewRows(reviews) {
+  if (!reviews.length) return `<tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--muted)">No reviews left.</td></tr>`;
+  return reviews.map(r => `<tr>
+    <td><div style="font-size:.8rem;color:var(--navy)">${esc(r.author_name)}</div><div style="font-size:.68rem;color:var(--muted)">${esc(r.author_location || '')}</div></td>
+    <td style="font-size:.75rem;color:var(--gold)">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</td>
+    <td style="font-size:.75rem;color:var(--muted);max-width:320px">${esc((r.review_text || '').slice(0, 110))}${(r.review_text || '').length > 110 ? '…' : ''}</td>
+    <td style="font-size:.72rem;color:var(--muted)">${esc(r.product_label || '—')}</td>
+    <td>
+      <button class="btn btn-danger btn-sm" onclick="deleteReview('${r.id}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Del
+      </button>
+    </td>
+  </tr>`).join('');
+}
+function deleteReview(id) {
+  const r = reviewsCache.find(x => x.id === id);
+  confirm2('Delete this review?', `The testimonial from ${r?.author_name || 'this customer'} will be permanently removed from the homepage.`, async () => {
+    try {
+      await Reviews.deleteReview(id, getToken());
+      showToast('Review deleted');
+      await loadReviewsData();
+      renderReviews();
+    } catch (err) { showToast(err.message || 'Failed to delete review', 'error'); }
+  });
+}
+
 /* ── ADMIN PROFILE ── */
 function renderProfile() {
   const s = session || {};
@@ -434,7 +596,7 @@ async function saveProfile() {
 /* ── VIEW ROUTER ── */
 let currentView = 'overview';
 let viewToken = 0; // bumped on every switchView call; a stale (superseded) call's render is dropped
-const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', profile: 'Admin Profile' };
+const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', reviews: 'Customer Reviews', profile: 'Admin Profile' };
 async function switchView(view) {
   const myToken = ++viewToken;
   currentView = view;
@@ -450,6 +612,8 @@ async function switchView(view) {
   else if (view === 'orders') { await loadOrdersData(); if (myToken !== viewToken) return; renderOrders(); }
   else if (view === 'products') { await loadProductsData(); if (myToken !== viewToken) return; renderProducts(); }
   else if (view === 'addProduct') { await loadProductsData(); if (myToken !== viewToken) return; openProductForm(); switchView('products'); return; }
+  else if (view === 'brands') { await loadProductsData(); if (myToken !== viewToken) return; renderBrands(); }
+  else if (view === 'reviews') { await loadReviewsData(); if (myToken !== viewToken) return; renderReviews(); }
   else if (view === 'profile') { renderProfile(); }
 }
 

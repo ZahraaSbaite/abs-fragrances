@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
-const { BRANDS, PRODUCTS, DEMO_USERS } = require('./seed-data');
+const { BRANDS, PRODUCTS, DEMO_USERS, REVIEWS } = require('./seed-data');
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -39,6 +39,18 @@ async function run() {
            badge = EXCLUDED.badge, badge_class = EXCLUDED.badge_class, price_cents = EXCLUDED.price_cents,
            intensity = EXCLUDED.intensity`,
         [p.id, p.name, p.brand_id, p.gender, p.notes, p.short_desc, p.full_desc, p.badge, p.badge_class, p.price_cents, p.intensity]
+      );
+    }
+
+    console.log('Seeding reviews...');
+    for (const r of REVIEWS) {
+      await client.query(
+        `INSERT INTO reviews (id, stars, review_text, author_name, author_location, product_label)
+         VALUES ($1,$2,$3,$4,$5,$6)
+         ON CONFLICT (id) DO UPDATE SET
+           stars = EXCLUDED.stars, review_text = EXCLUDED.review_text, author_name = EXCLUDED.author_name,
+           author_location = EXCLUDED.author_location, product_label = EXCLUDED.product_label`,
+        [r.id, r.stars, r.review_text, r.author_name, r.author_location, r.product_label]
       );
     }
 

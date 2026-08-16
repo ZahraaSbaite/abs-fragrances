@@ -54,4 +54,15 @@ const DEMO_USERS = [
   { name: 'Admin User', email: 'admin@abs.com', password: 'admin123', role: 'admin', phone: '', address: '' },
 ];
 
-module.exports = { BRANDS, PRODUCTS, DEMO_USERS };
+// Homepage testimonials — admin-curated (no public submission flow), so this
+// is the only place new ones get added; the dashboard can only delete.
+const REVIEWS = [
+  { id: 'review-rami',  stars: 5, review_text: "I ordered Shuhrah on a whim and it completely replaced my go-to scent. The longevity is insane — people ask me all day what I'm wearing.", author_name: 'Rami K.', author_location: 'Beirut, Lebanon', product_label: 'Shuhrah · Rasasi' },
+  { id: 'review-lara',  stars: 5, review_text: 'Hawas Éclat is absolutely dreamy. Light, feminine, and incredibly elegant. Delivery was fast and the packaging was beautiful. Will order again!', author_name: 'Lara M.', author_location: 'Jounieh, Lebanon', product_label: 'Hawas Éclat · Al Hambra' },
+  { id: 'review-karim', stars: 5, review_text: 'Finally found a place that brings real UAE fragrances to Lebanon. Wild Colt Bakhour is a masterpiece — deep, warm, and totally unique.', author_name: 'Karim A.', author_location: 'Tripoli, Lebanon', product_label: 'Wild Colt Bakhour · Assaf' },
+  { id: 'review-nour',  stars: 5, review_text: 'The service through WhatsApp was so personal and easy. They helped me pick the perfect gift for my husband. He loved it. Highly recommend.', author_name: 'Nour S.', author_location: 'Sidon, Lebanon', product_label: 'Gift Order · Lattafa' },
+  { id: 'review-tarek', stars: 5, review_text: 'Ordered three bottles at once and every single one exceeded my expectations. The scents are authentic UAE quality — not diluted or fake like other places.', author_name: 'Tarek H.', author_location: 'Zahle, Lebanon', product_label: 'Multiple Orders · Rasasi & Afnan' },
+  { id: 'review-maya',  stars: 5, review_text: "I was skeptical at first but after trying a sample they recommended I was hooked. Abs Fragrances has the best curation I've seen in Lebanon.", author_name: 'Maya R.', author_location: 'Baabda, Lebanon', product_label: 'Rue Broca Collection' },
+];
+
+module.exports = { BRANDS, PRODUCTS, DEMO_USERS, REVIEWS };

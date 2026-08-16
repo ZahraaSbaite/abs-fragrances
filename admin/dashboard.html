@@ -435,14 +435,6 @@
         <div class="form-group"><label class="form-label">Brand *</label>
           <select class="form-input" id="fpBrand">
             <option value="">Select brand…</option>
-            <option value="rasasi">Rasasi</option>
-            <option value="lattafa">Lattafa</option>
-            <option value="rueBroca">Rue Broca</option>
-            <option value="frenchAvenue">French Avenue</option>
-            <option value="assaf">Assaf</option>
-            <option value="afnan">Afnan</option>
-            <option value="rayhaan">Rayhaan</option>
-            <option value="alHambra">Al Hambra</option>
           </select>
         </div>
         <div class="form-group"><label class="form-label">Gender *</label>
@@ -486,6 +478,27 @@
         <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveProductForm()">Save
           Perfume</button>
         <button class="btn btn-outline" onclick="closeProductForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-overlay" id="brandFormOverlay">
+    <div class="form-panel" style="max-width:420px">
+      <button class="form-close" onclick="closeBrandForm()">✕</button>
+      <div class="form-panel-title" id="brandFormTitle">Add New Brand</div>
+      <input type="hidden" id="bfId" />
+      <div class="form-group"><label class="form-label">Brand ID (slug) *</label><input class="form-input"
+          id="bfIdInput" placeholder="e.g. maisonOud" /></div>
+      <div class="form-group"><label class="form-label">Brand Name *</label><input class="form-input" id="bfName"
+          placeholder="e.g. Maison Oud" /></div>
+      <div class="form-group"><label class="form-label">Logo (emoji)</label><input class="form-input" id="bfLogo"
+          placeholder="e.g. 🕌" maxlength="4" /></div>
+      <div id="bfError"
+        style="color:var(--danger);font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>
+      <div style="display:flex;gap:1rem;margin-top:.5rem">
+        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveBrandForm()">Save
+          Brand</button>
+        <button class="btn btn-outline" onclick="closeBrandForm()">Cancel</button>
       </div>
     </div>
   </div>
@@ -537,6 +550,18 @@
             <line x1="12" y1="8" x2="12" y2="16" />
             <line x1="8" y1="12" x2="16" y2="12" />
           </svg>Add New Perfume
+        </button>
+        <button class="sidebar-link" data-view="brands">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20.59 13.41L11 3.83V3H4v7l.83.83L14.41 20.59a2 2 0 002.83 0l3.35-3.35a2 2 0 000-2.83z" />
+            <circle cx="7.5" cy="7.5" r="1.2" />
+          </svg>Manage Brands
+        </button>
+        <div class="sidebar-section-label">Reviews</div>
+        <button class="sidebar-link" data-view="reviews">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          </svg>Customer Reviews
         </button>
         <div class="sidebar-section-label">Account</div>
         <button class="sidebar-link" data-view="profile">
@@ -593,7 +618,7 @@
           '<p style="padding:3rem;font-family:sans-serif;color:#c0392b">Could not reach the admin API. Is the backend running?</p>';
         return;
       }
-      for (const src of ['../js/products.js', '../js/orders.js', '../js/dashboard.js']) {
+      for (const src of ['../js/products.js', '../js/orders.js', '../js/reviews.js', '../js/dashboard.js']) {
         await new Promise((resolve, reject) => {
           const s = document.createElement('script');
           s.src = src;

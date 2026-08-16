@@ -23,8 +23,8 @@ function mapProduct(row) {
   };
 }
 
-function initProducts() {
-  if (_productsPromise) return _productsPromise;
+function initProducts(force) {
+  if (_productsPromise && !force) return _productsPromise;
   _productsPromise = (async () => {
     try {
       const [brandsRes, productsRes] = await Promise.all([

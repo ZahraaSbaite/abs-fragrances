@@ -5,6 +5,7 @@ const cors = require('cors');
 const authRoutes = require('./src/routes/auth.routes');
 const productsRoutes = require('./src/routes/products.routes');
 const ordersRoutes = require('./src/routes/orders.routes');
+const reviewsRoutes = require('./src/routes/reviews.routes');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/orders', ordersRoutes);
+app.use('/api/reviews', reviewsRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {

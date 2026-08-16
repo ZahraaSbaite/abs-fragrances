@@ -45,6 +45,58 @@ router.get('/brands', async (req, res) => {
   }
 });
 
+// POST /api/products/brands — admin only
+router.post('/brands', requireAuth, requireAdmin, async (req, res) => {
+  const { id, name, logo } = req.body;
+  if (!id || !name) return res.status(400).json({ error: 'id and name are required' });
+  try {
+    const result = await pool.query(
+      'INSERT INTO brands (id, name, logo) VALUES ($1,$2,$3) RETURNING *',
+      [id, name, logo || null]
+    );
+    res.status(201).json({ brand: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    if (err.code === '23505') return res.status(409).json({ error: 'A brand with this id already exists' });
+    res.status(500).json({ error: 'Failed to create brand' });
+  }
+});
+
+// PUT /api/products/brands/:id — admin only
+router.put('/brands/:id', requireAuth, requireAdmin, async (req, res) => {
+  const { name, logo } = req.body;
+  if (name === undefined && logo === undefined) return res.status(400).json({ error: 'No fields to update' });
+  const fields = [];
+  const params = [];
+  if (name !== undefined) { params.push(name); fields.push(`name = $${params.length}`); }
+  if (logo !== undefined) { params.push(logo); fields.push(`logo = $${params.length}`); }
+  params.push(req.params.id);
+  try {
+    const result = await pool.query(
+      `UPDATE brands SET ${fields.join(', ')} WHERE id = $${params.length} RETURNING *`,
+      params
+    );
+    if (!result.rows[0]) return res.status(404).json({ error: 'Brand not found' });
+    res.json({ brand: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update brand' });
+  }
+});
+
+// DELETE /api/products/brands/:id — admin only. Products referencing this
+// brand keep existing (brand_id is set to NULL, per the schema's ON DELETE SET NULL).
+router.delete('/brands/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM brands WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rows[0]) return res.status(404).json({ error: 'Brand not found' });
+    res.json({ deleted: req.params.id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete brand' });
+  }
+});
+
 // GET /api/products/:id
 router.get('/:id', async (req, res) => {
   try {

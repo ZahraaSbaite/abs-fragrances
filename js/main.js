@@ -25,6 +25,31 @@ function getBrandName(brandId) {
   return (typeof BRANDS !== 'undefined' && BRANDS[brandId]?.name) || brandId || '—';
 }
 
+/* ─── Homepage: Customer reviews (admin-curated, deletable from the dashboard) ─── */
+async function renderReviewsSection() {
+  const grid = document.getElementById('reviewsGrid');
+  if (!grid || typeof Reviews === 'undefined') return;
+  try {
+    const reviews = await Reviews.fetchAll();
+    grid.innerHTML = reviews.map((r, i) => `
+      <div class="review-card fade-up delay-${(i % 3) + 1}">
+        <div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+        <p class="review-text">"${escapeHtml(r.review_text)}"</p>
+        <div class="review-author">
+          <div class="review-avatar">${escapeHtml((r.author_name || '?').charAt(0))}</div>
+          <div>
+            <div class="review-name">${escapeHtml(r.author_name)}</div>
+            <div class="review-location">${escapeHtml(r.author_location || '')}</div>
+          </div>
+        </div>
+        <div class="review-product">${escapeHtml(r.product_label || '')}</div>
+      </div>`).join('');
+    grid.querySelectorAll('.fade-up').forEach(el => window.fadeUpObserver?.observe(el));
+  } catch (err) {
+    console.error('Failed to load reviews:', err);
+  }
+}
+
 /* ─── Product card HTML (reusable) ─── */
 function productCardHTML(p) {
   const brandName = getBrandName(p.brand);
@@ -217,6 +242,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
   }, { threshold: .1, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  window.fadeUpObserver = observer; // so content rendered later (e.g. reviews) can opt in too
+
+  renderReviewsSection();
 
   // Product card buttons on landing
   document.querySelectorAll('.product-card').forEach(card => {

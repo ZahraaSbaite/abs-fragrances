@@ -82,3 +82,18 @@ CREATE TABLE IF NOT EXISTS order_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+
+-- ─────────────────────────────────────────────
+-- REVIEWS
+-- Customer testimonials shown on the homepage. Admin-curated (no public
+-- submission flow) — admin can delete; seeded rows come from db/seed-data.js.
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS reviews (
+  id               TEXT PRIMARY KEY,
+  stars            INTEGER NOT NULL DEFAULT 5 CHECK (stars BETWEEN 1 AND 5),
+  review_text      TEXT NOT NULL,
+  author_name      TEXT NOT NULL,
+  author_location  TEXT,
+  product_label    TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
