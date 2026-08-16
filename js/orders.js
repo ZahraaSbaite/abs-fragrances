@@ -55,6 +55,8 @@ function submitCartOrder() {
 function renderCheckoutForm() {
   const body = document.getElementById('cartBody');
   if (!body) return;
+  const footer = document.querySelector('.cart-footer');
+  if (footer) footer.style.display = 'none';
   body.innerHTML = `
     <form id="checkoutForm" class="checkout-form">
       <label>Full name<input type="text" name="customer_name" required></label>
