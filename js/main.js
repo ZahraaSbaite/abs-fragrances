@@ -148,6 +148,16 @@ function closeSearchDropdown() {
 document.addEventListener('DOMContentLoaded', async () => {
   await initProducts();
   updateNavbarAuth();
+
+  // The homepage featured cards have hand-illustrated bottle art that's
+  // hardcoded in the HTML, but their price should reflect the real
+  // (possibly admin-edited) price from the database, not the static
+  // "On Request" placeholder in the markup.
+  document.querySelectorAll('.product-card[data-product]').forEach(card => {
+    const p = PRODUCTS[card.dataset.product];
+    const priceEl = card.querySelector('.product-price');
+    if (p && priceEl) priceEl.textContent = p.price;
+  });
   if (typeof updateCartBadge === 'function') updateCartBadge();
 
   // Navbar scroll
