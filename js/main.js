@@ -154,11 +154,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const nav = document.getElementById('navbar');
   window.addEventListener('scroll', () => nav?.classList.toggle('scrolled', window.scrollY > 60), { passive: true });
 
-  // Hamburger
+  // Hamburger — slide-in mobile nav drawer
   const ham = document.getElementById('hamburger');
   const mobileNav = document.getElementById('mobileNav');
-  ham?.addEventListener('click', () => { ham.classList.toggle('open'); mobileNav?.classList.toggle('open'); });
-  mobileNav?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { mobileNav.classList.remove('open'); ham?.classList.remove('open'); }));
+  const mobileNavBg = document.getElementById('mobileNavBg');
+  const closeMobileNav = () => { ham?.classList.remove('open'); mobileNav?.classList.remove('open'); mobileNavBg?.classList.remove('open'); };
+  ham?.addEventListener('click', () => {
+    const opening = !mobileNav?.classList.contains('open');
+    ham.classList.toggle('open', opening);
+    mobileNav?.classList.toggle('open', opening);
+    mobileNavBg?.classList.toggle('open', opening);
+  });
+  mobileNav?.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileNav));
+  document.getElementById('mobileNavClose')?.addEventListener('click', closeMobileNav);
+  mobileNavBg?.addEventListener('click', closeMobileNav);
 
   // Scroll animations
   const observer = new IntersectionObserver(entries => {
@@ -193,4 +202,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Navbar search
   initNavbarSearch();
+
+  // Hero parallax — the emblem drifts gently toward the cursor
+  const heroSection = document.getElementById('home');
+  const heroVisualWrap = document.getElementById('heroVisualWrap');
+  const canParallax = heroSection && heroVisualWrap
+    && window.matchMedia('(pointer: fine)').matches
+    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (canParallax) {
+    heroSection.addEventListener('mousemove', e => {
+      const r = heroSection.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width - .5) * 2;
+      const y = ((e.clientY - r.top) / r.height - .5) * 2;
+      heroVisualWrap.style.transform = `translate(${x * 14}px, ${y * 14}px)`;
+    }, { passive: true });
+    heroSection.addEventListener('mouseleave', () => {
+      heroVisualWrap.style.transform = 'translate(0,0)';
+    });
+  }
 });

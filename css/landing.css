@@ -316,6 +316,63 @@
   50%    {opacity:1; transform:translateX(-50%) scaleX(1.3)}
 }
 
+/* ─── HERO ENTRANCE + EXTRA MOTION ─── */
+.hero-eyebrow, .hero-headline, .hero-sub, .hero-actions {
+  opacity: 0; transform: translateY(24px);
+  animation: heroRise .9s var(--ease) forwards;
+}
+.hero-eyebrow  { animation-delay: .1s; }
+.hero-headline { animation-delay: .25s; }
+.hero-sub      { animation-delay: .45s; }
+.hero-actions  { animation-delay: .65s; }
+@keyframes heroRise { to { opacity: 1; transform: translateY(0); } }
+
+.hero-headline em {
+  background: linear-gradient(100deg, var(--gold) 30%, #f0dcb8 45%, var(--gold) 60%);
+  background-size: 220% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: goldShimmer 6s linear infinite 1.6s;
+}
+@keyframes goldShimmer { to { background-position: -220% center; } }
+
+.hero-particle {
+  position: absolute; bottom: 10%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(196,162,112,.9) 0%, rgba(196,162,112,0) 70%);
+  pointer-events: none; opacity: 0;
+  animation: particleDrift linear infinite;
+}
+.hero-particle.hp-1 { left: 15%; width: 5px; height: 5px; animation-duration: 7s;   animation-delay: 0s; }
+.hero-particle.hp-2 { left: 78%; width: 4px; height: 4px; animation-duration: 9s;   animation-delay: 1.5s; }
+.hero-particle.hp-3 { left: 48%; width: 6px; height: 6px; animation-duration: 6.5s; animation-delay: 3s; }
+.hero-particle.hp-4 { left: 62%; width: 3px; height: 3px; animation-duration: 8s;   animation-delay: .8s; }
+.hero-particle.hp-5 { left: 28%; width: 5px; height: 5px; animation-duration: 10s;  animation-delay: 4s; }
+.hero-particle.hp-6 { left: 85%; width: 4px; height: 4px; animation-duration: 7.5s; animation-delay: 2.2s; }
+@keyframes particleDrift {
+  0%   { opacity: 0; transform: translateY(0) scale(.6); }
+  15%  { opacity: .85; }
+  85%  { opacity: .4; }
+  100% { opacity: 0; transform: translateY(-280px) scale(1); }
+}
+
+.hero-logo-ring-spin {
+  position: absolute; border-radius: 50%;
+  border: 1px dashed rgba(196,162,112,.28);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 340px; height: 340px;
+  pointer-events: none;
+  animation: ringSpin 44s linear infinite;
+}
+@keyframes ringSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+.hero-bottle-wrap { transition: transform .25s ease-out; will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-eyebrow, .hero-headline, .hero-sub, .hero-actions { opacity: 1; transform: none; animation: none; }
+  .hero-headline em { animation: none; }
+  .hero-particle, .hero-logo-ring-spin { display: none; }
+  .hero-bottle-wrap { transition: none; }
+}
+
 /* ─── FEATURED PRODUCTS ─── */
 .featured { background:var(--bg); padding:7rem 4rem; }
 .products-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; max-width:1200px; margin:0 auto; }

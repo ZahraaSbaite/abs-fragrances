@@ -28,7 +28,9 @@
   
   <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
 </nav>
+<div class="mobile-nav-bg" id="mobileNavBg"></div>
 <div class="mobile-nav" id="mobileNav">
+  <button class="mobile-nav-close" id="mobileNavClose">✕</button>
   <a href="index.html">Home</a><a href="about.html">About Us</a><a href="all-perfumes.html">All Perfumes</a><a href="categories.html">Categories</a><a href="contact.html">Contact Us</a>
 </div>
 
@@ -107,10 +109,19 @@
 document.addEventListener('DOMContentLoaded',()=>{
   updateNavbarAuth();
   window.addEventListener('scroll',()=>document.getElementById('navbar')?.classList.toggle('scrolled',window.scrollY>60),{passive:true});
-  document.getElementById('hamburger')?.addEventListener('click',()=>{
-    document.getElementById('hamburger').classList.toggle('open');
-    document.getElementById('mobileNav')?.classList.toggle('open');
+  const ham = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobileNav');
+  const mobileNavBg = document.getElementById('mobileNavBg');
+  const closeMobileNav = () => { ham?.classList.remove('open'); mobileNav?.classList.remove('open'); mobileNavBg?.classList.remove('open'); };
+  ham?.addEventListener('click', () => {
+    const opening = !mobileNav?.classList.contains('open');
+    ham.classList.toggle('open', opening);
+    mobileNav?.classList.toggle('open', opening);
+    mobileNavBg?.classList.toggle('open', opening);
   });
+  mobileNav?.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileNav));
+  document.getElementById('mobileNavClose')?.addEventListener('click', closeMobileNav);
+  mobileNavBg?.addEventListener('click', closeMobileNav);
   const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.1});
   document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
 });
