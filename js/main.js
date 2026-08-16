@@ -144,6 +144,33 @@ function closeSearchDropdown() {
   document.getElementById('searchDropdown')?.classList.remove('show');
 }
 
+/* ─── Admin login from the mobile drawer ─── */
+function initMobileNavAdminForm() {
+  const form = document.getElementById('mobileNavAdminForm');
+  form?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const pwInput = document.getElementById('mobileNavAdminPassword');
+    const errEl = document.getElementById('mobileNavAdminErr');
+    const btn = form.querySelector('.mobile-nav-admin-btn');
+    const password = pwInput.value;
+    if (!password) return;
+    errEl.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Checking…';
+    const result = await login(ADMIN_EMAIL, password);
+    if (!result.ok) {
+      errEl.textContent = result.error;
+      errEl.classList.add('show');
+      pwInput.value = '';
+      pwInput.focus();
+      btn.disabled = false;
+      btn.textContent = 'Log In';
+      return;
+    }
+    window.location.href = 'admin/dashboard.html';
+  });
+}
+
 /* ─── Init (landing page) ─── */
 document.addEventListener('DOMContentLoaded', async () => {
   await initProducts();
@@ -183,6 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const q = document.getElementById('mobileNavSearchInput')?.value.trim();
     if (q) window.location.href = 'all-perfumes.html?q=' + encodeURIComponent(q);
   });
+  initMobileNavAdminForm();
 
   // Scroll animations
   const observer = new IntersectionObserver(entries => {

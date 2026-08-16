@@ -103,7 +103,12 @@
     <a href="categories.html">Categories</a>
     <a href="contact.html">Contact Us</a>
     <div class="mobile-nav-divider"></div>
-    <a href="admin/dashboard.html">Admin</a>
+    <form class="mobile-nav-admin" id="mobileNavAdminForm">
+      <label class="mobile-nav-admin-label">Admin</label>
+      <input type="password" id="mobileNavAdminPassword" placeholder="Password" autocomplete="current-password" />
+      <div class="mobile-nav-admin-err" id="mobileNavAdminErr"></div>
+      <button type="submit" class="mobile-nav-admin-btn">Log In</button>
+    </form>
     <a href="https://wa.me/96178901234">WhatsApp Order</a>
   </div>
 
