@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Admin Dashboard — Abs Fragrances</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Jost:wght@300;400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../css/shared.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+  <style>
+    .status-pipeline {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+      overflow: hidden;
+      border: 1px solid rgba(22, 56, 70, .1)
+    }
+
+    .pipeline-step {
+      flex: 1;
+      padding: .9rem 1rem;
+      text-align: center;
+      font-family: var(--sans);
+      font-size: .65rem;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .pipeline-step.active-filter {
+      box-shadow: inset 0 -3px 0 currentColor;
+      font-weight: 700
+    }
+
+    .pipeline-step .step-count {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: 400;
+      font-family: var(--serif);
+      margin-bottom: .15rem
+    }
+
+    .form-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 34, 48, .88);
+      backdrop-filter: blur(10px);
+      z-index: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+      padding: 1rem
+    }
+
+    .form-overlay.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .form-panel {
+      background: var(--white);
+      max-width: 640px;
+      width: 100%;
+      padding: 2.5rem;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform .3s
+    }
+
+    .form-overlay.open .form-panel {
+      transform: translateY(0)
+    }
+
+    .form-panel-title {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(22, 56, 70, .06)
+    }
+
+    .form-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--muted)
+    }
+
+    .form-close:hover {
+      color: var(--navy)
+    }
+
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 34, 48, .7);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s
+    }
+
+    .confirm-overlay.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .confirm-box {
+      background: var(--white);
+      padding: 2rem;
+      max-width: 380px;
+      width: 100%;
+      text-align: center
+    }
+
+    .confirm-box h3 {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      color: var(--navy);
+      margin-bottom: .8rem
+    }
+
+    .confirm-box p {
+      font-family: var(--sans);
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: .8rem;
+      justify-content: center
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem
+    }
+
+    @media(max-width:1200px) {
+      .metrics-row {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    @media(max-width:768px) {
+      .metrics-row {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .dash-content {
+        padding: 1rem
+      }
+    }
+
+    .photo-preview-wrap {
+      width: 100%;
+      height: 160px;
+      background: var(--bg);
+      border: 1px dashed rgba(22, 56, 70, .2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: .6rem;
+      overflow: hidden
+    }
+
+    .photo-preview-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .photo-preview-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: .75rem
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center
+    }
+
+    .filter-chip {
+      font-family: var(--sans);
+      font-size: .65rem;
+      font-weight: 500;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: .45rem 1rem;
+      border: 1px solid rgba(22, 56, 70, .18);
+      background: transparent;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .filter-chip:hover {
+      border-color: var(--gold);
+      color: var(--gold)
+    }
+
+    .filter-chip.active {
+      background: var(--navy);
+      color: var(--bg);
+      border-color: var(--navy)
+    }
+
+    .admin-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      align-items: center;
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid rgba(22, 56, 70, .06);
+      background: var(--white)
+    }
+
+    .status-sel {
+      font-family: var(--sans);
+      font-size: .68rem;
+      padding: .35rem .5rem;
+      border: 1px solid rgba(22, 56, 70, .15);
+      background: var(--white);
+      color: var(--navy);
+      outline: none;
+      cursor: pointer
+    }
+
+    .status-sel:focus {
+      border-color: var(--gold)
+    }
+
+    .profile-card {
+      background: var(--white);
+      padding: 2.5rem;
+      max-width: 560px;
+      box-shadow: 0 1px 8px rgba(22, 56, 70, .06)
+    }
+
+    .profile-avatar-row {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(22, 56, 70, .06)
+    }
+
+    .profile-avatar-big {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(196, 162, 112, .18);
+      border: 2px solid rgba(196, 162, 112, .4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 1.8rem;
+      color: var(--gold);
+      flex-shrink: 0
+    }
+
+    .profile-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem
+    }
+
+    .profile-form .form-group {
+      margin: 0
+    }
+
+    .profile-form .form-label {
+      display: block;
+      font-family: var(--sans);
+      font-size: .65rem;
+      font-weight: 500;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .5rem
+    }
+
+    .profile-form .form-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: .8rem 1rem;
+      font-family: var(--sans);
+      font-size: .9rem;
+      color: var(--navy);
+      border: 1px solid rgba(22, 56, 70, .15);
+      background: var(--white);
+      transition: border-color .2s
+    }
+
+    .profile-form .form-input:focus {
+      outline: none;
+      border-color: var(--gold)
+    }
+
+    .profile-form .form-hint {
+      font-family: var(--sans);
+      font-size: .7rem;
+      color: var(--muted);
+      font-weight: 300;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-top: .35rem;
+      display: block
+    }
+
+    .profile-form-divider {
+      height: 1px;
+      background: rgba(22, 56, 70, .06);
+      margin: .2rem 0
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-top: .5rem
+    }
+
+    .profile-actions .btn {
+      padding: .85rem 2rem
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem
+    }
+
+    .toast {
+      font-family: var(--sans);
+      font-size: .78rem;
+      padding: .8rem 1.3rem;
+      background: var(--navy);
+      color: var(--bg);
+      max-width: 300px;
+      transition: opacity .4s
+    }
+
+    .toast.success {
+      background: #2e7d32
+    }
+
+    .toast.error {
+      background: var(--danger)
+    }
+
+    .toast.out {
+      opacity: 0
+    }
+  </style>
+</head>
+
+<body>
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <h3 id="confirmTitle">Are you sure?</h3>
+      <p id="confirmMsg">This action cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-outline" onclick="closeConfirm()">Cancel</button>
+        <button class="btn btn-danger" id="confirmOkBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-overlay" id="productFormOverlay">
+    <div class="form-panel">
+      <button class="form-close" onclick="closeProductForm()">✕</button>
+      <div class="form-panel-title" id="productFormTitle">Add New Perfume</div>
+      <input type="hidden" id="fpId" />
+      <div class="form-group">
+        <label class="form-label">Product Photo *</label>
+        <div class="photo-preview-wrap" id="photoPreviewWrap">
+          <div class="photo-preview-placeholder" id="photoPlaceholder">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <span>Enter URL below or upload a file</span>
+          </div>
+          <img id="photoPreviewImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover" />
+        </div>
+        <div style="display:flex;gap:.6rem;align-items:center">
+          <input class="form-input" id="fpPhoto" placeholder="https://... image URL" style="flex:1"
+            oninput="previewPhotoUrl()" />
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;white-space:nowrap;flex-shrink:0">
+            📁 Upload<input type="file" accept="image/*" id="fpPhotoFile" style="display:none"
+              onchange="handlePhotoUpload(this)" />
+          </label>
+        </div>
+      </div>
+      <div class="dash-form-grid">
+        <div class="form-group"><label class="form-label">Perfume Name *</label><input class="form-input" id="fpName"
+            placeholder="e.g. Oud Noir" /></div>
+        <div class="form-group"><label class="form-label">Brand *</label>
+          <select class="form-input" id="fpBrand">
+            <option value="">Select brand…</option>
+            <option value="rasasi">Rasasi</option>
+            <option value="lattafa">Lattafa</option>
+            <option value="rueBroca">Rue Broca</option>
+            <option value="frenchAvenue">French Avenue</option>
+            <option value="assaf">Assaf</option>
+            <option value="afnan">Afnan</option>
+            <option value="rayhaan">Rayhaan</option>
+            <option value="alHambra">Al Hambra</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Gender *</label>
+          <select class="form-input" id="fpGender">
+            <option value="Men">Men</option>
+            <option value="Women">Women</option>
+            <option value="Unisex">Unisex</option>
+            <option value="Musk">Musk</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Intensity</label>
+          <select class="form-input" id="fpIntensity">
+            <option>Light</option>
+            <option selected>Moderate</option>
+            <option>Strong</option>
+            <option>Intense</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Price (USD) *</label><input class="form-input" id="fpPrice"
+            type="number" step="0.01" min="0" placeholder="e.g. 45.00" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Short Description *</label><textarea class="form-input"
+          id="fpShortDesc" style="min-height:70px" placeholder="One sentence about this perfume"></textarea></div>
+      <div class="form-group"><label class="form-label">Full Description</label><textarea class="form-input"
+          id="fpFullDesc" style="min-height:90px" placeholder="Detailed description for the product modal"></textarea>
+      </div>
+      <div class="form-group"><label class="form-label">Fragrance Notes <span
+            style="font-weight:300;text-transform:none;letter-spacing:0">(comma-separated)</span></label><input
+          class="form-input" id="fpNotes" placeholder="Oud, Rose, Amber, Musk, Sandalwood" /></div>
+      <div class="dash-form-grid">
+        <div class="form-group"><label class="form-label">Badge Label</label><input class="form-input" id="fpBadge"
+            placeholder="e.g. Bestseller" /></div>
+        <div class="form-group"><label class="form-label">In Stock</label><select class="form-input" id="fpStock">
+            <option value="true">Yes — In Stock</option>
+            <option value="false">No — Out of Stock</option>
+          </select></div>
+      </div>
+      <div id="fpError"
+        style="color:var(--danger);font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>
+      <div style="display:flex;gap:1rem;margin-top:.5rem">
+        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveProductForm()">Save
+          Perfume</button>
+        <button class="btn btn-outline" onclick="closeProductForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <div class="dash-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-name">Abs<span>.</span></div>
+        <div class="sidebar-role-pill">⚙️ Admin Panel</div>
+      </div>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarInitials">A</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebarName">—</div>
+          <div class="sidebar-user-email" id="sidebarEmail">—</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Overview</div>
+        <button class="sidebar-link active" data-view="overview">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>Dashboard
+        </button>
+        <div class="sidebar-section-label">Orders</div>
+        <button class="sidebar-link" data-view="orders">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+            <rect x="9" y="3" width="6" height="4" rx="1" />
+          </svg>All Orders
+          <span class="sidebar-link-badge" id="pendingBadge" style="display:none">0</span>
+        </button>
+        <div class="sidebar-section-label">Catalog</div>
+        <button class="sidebar-link" data-view="products">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path
+              d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+          </svg>Manage Perfumes
+        </button>
+        <button class="sidebar-link" data-view="addProduct">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>Add New Perfume
+        </button>
+        <div class="sidebar-section-label">Account</div>
+        <button class="sidebar-link" data-view="profile">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+          </svg>Admin Profile
+        </button>
+        <div class="sidebar-section-label">Store</div>
+        <a href="../index.html" target="_blank" class="sidebar-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>View Live Store
+        </a>
+        <a href="../all-perfumes.html" target="_blank" class="sidebar-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>All Perfumes Page
+        </a>
+      </nav>
+      <div class="sidebar-logout">
+        <button class="sidebar-logout-btn" onclick="logout()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>Log out
+        </button>
+      </div>
+    </aside>
+    <main class="dash-main">
+      <div class="dash-topbar">
+        <div class="dash-topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="dash-topbar-right">
+          <button class="btn btn-gold btn-sm" onclick="openProductForm()">+ Add Perfume</button>
+          <a id="topbarWhatsapp" href="https://wa.me/96178901234" target="_blank" class="btn btn-wa btn-sm">WhatsApp</a>
+        </div>
+      </div>
+      <div class="dash-content" id="dashContent"></div>
+    </main>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    // No login page: authenticate silently, then load the rest of the app.
+    (async function boot() {
+      const session = await ensureAdminSession();
+      if (!session) {
+        document.querySelector('.dash-layout').innerHTML =
+          '<p style="padding:3rem;font-family:sans-serif;color:#c0392b">Could not reach the admin API. Is the backend running?</p>';
+        return;
+      }
+      for (const src of ['../js/products.js', '../js/orders.js', '../js/dashboard.js']) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+    })();
+  </script>
+</body>
+
+</html>

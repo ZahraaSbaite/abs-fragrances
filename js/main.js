@@ -1,0 +1,196 @@
+/**
+ * ABS FRAGRANCES — main.js (landing page + shared utilities)
+ */
+
+/* ─── Toast ─── */
+function showToast(msg, type = '') {
+  let c = document.querySelector('.toast-container');
+  if (!c) { c = document.createElement('div'); c.className = 'toast-container'; document.body.appendChild(c); }
+  const t = document.createElement('div'); t.className = 'toast ' + (type || '');
+  t.textContent = msg; c.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 400); }, 3000);
+}
+
+/* ─── Escape HTML ─── */
+function escapeHtml(s) {
+  const d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML;
+}
+
+/* ─── Get brand emoji ─── */
+function getBrandEmoji(brandId) {
+  const emojis = { rasasi: '🌹', lattafa: '🔮', rueBroca: '🌿', frenchAvenue: '🗼', assaf: '🪔', afnan: '💎', rayhaan: '🌸', alHambra: '🏰' };
+  return emojis[brandId] || '🧴';
+}
+function getBrandName(brandId) {
+  return (typeof BRANDS !== 'undefined' && BRANDS[brandId]?.name) || brandId || '—';
+}
+
+/* ─── Product card HTML (reusable) ─── */
+function productCardHTML(p) {
+  const brandName = getBrandName(p.brand);
+  const emoji = getBrandEmoji(p.brand);
+  return `
+    <div class="catalog-card fade-up" data-product="${p.id}" onclick="openProductModal('${p.id}')">
+      <div class="catalog-card-img ${genderBgClass(p.gender)}">
+        ${p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${p.badge}</div>` : ''}
+        <div style="font-size:3.5rem;filter:drop-shadow(0 6px 20px rgba(22,56,70,.15));transition:transform .4s">${emoji}</div>
+      </div>
+      <div class="catalog-card-body">
+        <div class="catalog-card-brand">${escapeHtml(brandName)}</div>
+        <div class="catalog-card-name">${escapeHtml(p.name)}</div>
+        <div class="catalog-card-gender">${p.gender} · ${p.intensity || 'Moderate'}</div>
+        <div class="catalog-card-notes">${(p.notes || []).slice(0, 3).map(n => `<span class="catalog-note">${escapeHtml(n)}</span>`).join('')}</div>
+        <div class="catalog-card-footer">
+<span class="product-price" style="font-family:var(--serif2);font-style:italic;color:var(--navy)">${p.price}</span>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn-add-cart" onclick="event.stopPropagation();addToCart('${p.id}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function genderBgClass(g) {
+  const map = { Women: 'hawas-bg', Men: 'sh-bg', Unisex: 'wc-bg', Musk: 'musk-bg' };
+  return map[g] || 'wc-bg';
+}
+
+/* ─── Product Modal ─── */
+function openProductModal(productId) {
+  const all = typeof getAllProductsCatalog === 'function' ? getAllProductsCatalog() : (PRODUCTS || {});
+  const p = all[productId];
+  if (!p) return;
+  const overlay = document.getElementById('productModal');
+  const content = document.getElementById('modalContent');
+  if (!overlay || !content) return;
+  const brandName = getBrandName(p.brand);
+  const emoji = getBrandEmoji(p.brand);
+  content.innerHTML = `
+    <div style="height:160px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 -3rem 1.5rem;font-size:4rem">
+      ${emoji}
+    </div>
+    <div class="modal-collection">${escapeHtml(brandName)} — ${escapeHtml(p.gender)}</div>
+    <div class="modal-product-name">${escapeHtml(p.name)}</div>
+<div style="font-family:var(--serif2);font-style:italic;font-size:1.1rem;color:var(--gold);margin-bottom:.5rem">${p.price}</div>
+      ${p.badge ? `<span class="badge ${p.badgeClass || 'badge-muted'}">${p.badge}</span>` : ''}
+      <span style="font-family:var(--sans);font-size:.65rem;padding:.25rem .65rem;background:rgba(22,56,70,.06);color:var(--muted)">${p.intensity || 'Moderate'}</span>
+    </div>
+    <div class="modal-desc">${escapeHtml(p.fullDesc || p.shortDesc || '')}</div>
+    <div class="modal-notes-label">Fragrance Notes</div>
+    <div class="modal-notes">${(p.notes || []).map(n => `<span class="note-chip">${escapeHtml(n)}</span>`).join('')}</div>
+    <div class="modal-actions-row">
+      <button class="btn btn-navy" style="flex:1;justify-content:center" onclick="addToCart('${p.id}');closeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Add to Cart
+      </button>
+      <a href="https://wa.me/96178901234" target="_blank" class="btn btn-wa" style="flex:1;justify-content:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp Order
+      </a>
+    </div>`;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.querySelectorAll('.modal-overlay').forEach(o => o.classList.remove('open'));
+  document.body.style.overflow = '';
+}
+window.closeModal = closeModal;
+
+/* ─── Navbar Search Dropdown ─── */
+function initNavbarSearch() {
+  const input = document.getElementById('navSearch');
+  const dropdown = document.getElementById('searchDropdown');
+  if (!input || !dropdown) return;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    if (!q) { dropdown.classList.remove('show'); return; }
+    if (typeof searchProducts !== 'function') { return; }
+    const results = searchProducts(q).slice(0, 6);
+    if (!results.length) {
+      dropdown.innerHTML = `<div class="search-no-result">No perfumes found for "<em>${escapeHtml(q)}</em>"</div>`;
+    } else {
+      dropdown.innerHTML = results.map(p => `
+        <div class="search-result-item" onclick="openProductModal('${p.id}');closeSearchDropdown()">
+          <div class="search-result-thumb">${getBrandEmoji(p.brand)}</div>
+          <div>
+            <div class="search-result-name">${escapeHtml(p.name)}</div>
+            <div class="search-result-brand">${escapeHtml(getBrandName(p.brand))}</div>
+            <div class="search-result-gender">${p.gender}</div>
+          </div>
+        </div>`).join('');
+    }
+    dropdown.classList.add('show');
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !dropdown.contains(e.target)) closeSearchDropdown();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSearchDropdown();
+    if (e.key === 'Enter') {
+      const q = input.value.trim();
+      if (q) { window.location.href = `all-perfumes.html?q=${encodeURIComponent(q)}`; }
+    }
+  });
+}
+function closeSearchDropdown() {
+  document.getElementById('searchDropdown')?.classList.remove('show');
+}
+
+/* ─── Init (landing page) ─── */
+document.addEventListener('DOMContentLoaded', async () => {
+  await initProducts();
+  updateNavbarAuth();
+  if (typeof updateCartBadge === 'function') updateCartBadge();
+
+  // Navbar scroll
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', () => nav?.classList.toggle('scrolled', window.scrollY > 60), { passive: true });
+
+  // Hamburger
+  const ham = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobileNav');
+  ham?.addEventListener('click', () => { ham.classList.toggle('open'); mobileNav?.classList.toggle('open'); });
+  mobileNav?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { mobileNav.classList.remove('open'); ham?.classList.remove('open'); }));
+
+  // Scroll animations
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: .1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Product card buttons on landing
+  document.querySelectorAll('.product-card').forEach(card => {
+    const id = card.dataset.product;
+    card.querySelector('.btn-view-det')?.addEventListener('click', e => { e.stopPropagation(); openProductModal(id); });
+    card.querySelector('.btn-add-cart')?.addEventListener('click', e => { e.stopPropagation(); addToCart(id); });
+    card.addEventListener('keydown', e => { if (e.key === 'Enter') openProductModal(id); });
+  });
+
+  // Modal close
+  document.getElementById('productModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (!t) return; e.preventDefault();
+      const off = document.getElementById('navbar')?.offsetHeight || 70;
+      window.scrollTo({ top: t.getBoundingClientRect().top + window.pageYOffset - off, behavior: 'smooth' });
+    });
+  });
+
+  // Cart drawer bg
+  document.getElementById('cartDrawerBg')?.addEventListener('click', closeCart);
+
+  // Navbar search
+  initNavbarSearch();
+});
