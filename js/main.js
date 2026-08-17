@@ -25,6 +25,80 @@ function getBrandName(brandId) {
   return (typeof BRANDS !== 'undefined' && BRANDS[brandId]?.name) || brandId || '—';
 }
 
+/* ─── Homepage: "Our Signature Scents" (admin-curated featured perfumes) ─── */
+let _featuredList = [];
+let _featuredStart = 0;
+const FEATURED_VISIBLE = 3;
+
+function featuredCardHTML(p) {
+  const brandName = getBrandName(p.brand);
+  const emoji = getBrandEmoji(p.brand);
+  return `
+    <div class="product-card fade-up" data-product="${p.id}" onclick="openProductModal('${p.id}')">
+      <div class="product-img-wrap ${genderBgClass(p.gender)}">
+        ${p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${escapeHtml(p.badge)}</div>` : ''}
+        <div class="product-emoji" style="font-size:3.8rem;filter:drop-shadow(0 6px 20px rgba(22,56,70,.15))">${emoji}</div>
+      </div>
+      <div class="product-info">
+        <div class="product-collection">${escapeHtml(brandName)} · ${p.gender}</div>
+        <h3 class="product-name">${escapeHtml(p.name)}</h3>
+        <p class="product-desc">${escapeHtml(p.shortDesc || '')}</p>
+        <div class="product-footer">
+          <div class="product-price">${p.price}</div>
+          <button class="btn-view-det" onclick="event.stopPropagation();openProductModal('${p.id}')">Details</button>
+          <button class="btn-add-cart" onclick="event.stopPropagation();addToCart('${p.id}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Add
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderFeaturedWindow() {
+  const grid = document.getElementById('featuredGrid');
+  if (!grid) return;
+  const total = _featuredList.length;
+  if (!total) {
+    grid.innerHTML = `<div class="featured-empty">New arrivals coming soon.</div>`;
+    document.getElementById('featuredPrevBtn')?.classList.add('is-hidden');
+    document.getElementById('featuredNextBtn')?.classList.add('is-hidden');
+    return;
+  }
+  const visible = total <= FEATURED_VISIBLE
+    ? _featuredList
+    : Array.from({ length: FEATURED_VISIBLE }, (_, i) => _featuredList[(_featuredStart + i) % total]);
+
+  grid.innerHTML = visible.map(featuredCardHTML).join('');
+  grid.querySelectorAll('.fade-up').forEach(el => { el.classList.add('visible'); window.fadeUpObserver?.observe(el); });
+
+  const arrows = total > FEATURED_VISIBLE;
+  document.getElementById('featuredPrevBtn')?.classList.toggle('is-hidden', !arrows);
+  document.getElementById('featuredNextBtn')?.classList.toggle('is-hidden', !arrows);
+}
+
+function renderFeaturedSection() {
+  if (!document.getElementById('featuredGrid')) return;
+  _featuredList = Object.values(PRODUCTS).filter(p => p.isFeatured);
+  _featuredStart = 0;
+  renderFeaturedWindow();
+}
+
+function initFeaturedCarousel() {
+  document.getElementById('featuredPrevBtn')?.addEventListener('click', () => {
+    const total = _featuredList.length;
+    if (!total) return;
+    _featuredStart = (_featuredStart - 1 + total) % total;
+    renderFeaturedWindow();
+  });
+  document.getElementById('featuredNextBtn')?.addEventListener('click', () => {
+    const total = _featuredList.length;
+    if (!total) return;
+    _featuredStart = (_featuredStart + 1) % total;
+    renderFeaturedWindow();
+  });
+}
+
 /* ─── Homepage: Customer reviews ─── */
 /* Shown reviews are either curated seed data or submitted live by visitors
  * via the form below the grid (published immediately, no moderation queue).
@@ -308,15 +382,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initProducts();
   updateNavbarAuth();
 
-  // The homepage featured cards have hand-illustrated bottle art that's
-  // hardcoded in the HTML, but their price should reflect the real
-  // (possibly admin-edited) price from the database, not the static
-  // "On Request" placeholder in the markup.
-  document.querySelectorAll('.product-card[data-product]').forEach(card => {
-    const p = PRODUCTS[card.dataset.product];
-    const priceEl = card.querySelector('.product-price');
-    if (p && priceEl) priceEl.textContent = p.price;
-  });
   if (typeof updateCartBadge === 'function') updateCartBadge();
 
   // Navbar scroll
@@ -351,17 +416,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   window.fadeUpObserver = observer; // so content rendered later (e.g. reviews) can opt in too
 
+  renderFeaturedSection();
+  initFeaturedCarousel();
   renderReviewsSection();
   initReviewForm();
   initReviewsCarousel();
-
-  // Product card buttons on landing
-  document.querySelectorAll('.product-card').forEach(card => {
-    const id = card.dataset.product;
-    card.querySelector('.btn-view-det')?.addEventListener('click', e => { e.stopPropagation(); openProductModal(id); });
-    card.querySelector('.btn-add-cart')?.addEventListener('click', e => { e.stopPropagation(); addToCart(id); });
-    card.addEventListener('keydown', e => { if (e.key === 'Enter') openProductModal(id); });
-  });
 
   // Modal close
   document.getElementById('productModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });

@@ -47,11 +47,16 @@ CREATE TABLE IF NOT EXISTS products (
   intensity    TEXT,                      -- 'Light' | 'Moderate' | 'Strong' | 'Intense'
   in_stock     BOOLEAN NOT NULL DEFAULT true,
   image_url    TEXT,
+  is_featured  BOOLEAN NOT NULL DEFAULT false, -- shown in the homepage "Our Signature Scents" section
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Safe to re-run against a database where `products` already exists without this column.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS is_featured BOOLEAN NOT NULL DEFAULT false;
+
 CREATE INDEX IF NOT EXISTS idx_products_brand  ON products(brand_id);
 CREATE INDEX IF NOT EXISTS idx_products_gender ON products(gender);
+CREATE INDEX IF NOT EXISTS idx_products_featured ON products(is_featured);
 
 -- ─────────────────────────────────────────────
 -- ORDERS

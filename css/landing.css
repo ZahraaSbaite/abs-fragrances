@@ -249,7 +249,9 @@
 
 /* ─── FEATURED PRODUCTS ─── */
 .featured { background:var(--bg); padding:7rem 4rem; }
-.products-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; max-width:1200px; margin:0 auto; }
+.featured-carousel { display:flex; align-items:center; gap:1.25rem; max-width:1200px; margin:0 auto; width:100%; }
+.products-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; flex:1; min-width:0; }
+.featured-empty { text-align:center; font-family:var(--sans); font-size:.85rem; color:var(--muted); padding:3rem 0; grid-column:1/-1; }
 
 .product-card { background:var(--white); box-shadow:var(--shadow-sm); transition:all .4s var(--ease); cursor:pointer; overflow:hidden; position:relative; }
 .product-card:hover { transform:translateY(-8px); box-shadow:var(--shadow-lg); }
@@ -261,9 +263,8 @@
 .wc-bg    { background:linear-gradient(145deg,#f5ede0,#ead5b5,#d4b888); }
 .sh-bg    { background:linear-gradient(145deg,#e8eff4,#d0dde8,#b8ccda); }
 
-.product-bottle { transition:transform .5s ease; }
-.product-card:hover .product-bottle { transform:scale(1.06) translateY(-5px); }
-.bottle-svg { filter:drop-shadow(0 10px 30px rgba(var(--ink-rgb),.15)); }
+.product-emoji { transition:transform .5s ease; }
+.product-card:hover .product-emoji { transform:scale(1.08) translateY(-5px); }
 
 .product-badge { position:absolute; top:1rem; right:1rem; font-family:var(--sans); font-size:.55rem; font-weight:500; letter-spacing:.15em; text-transform:uppercase; padding:.28rem .65rem; }
 .badge-best { background:var(--gold); color:var(--white); }
@@ -451,6 +452,7 @@
 }
 @media(max-width:768px){
   .products-grid { grid-template-columns:1fr; gap:1.5rem; }
+  .featured-carousel { gap:.6rem; }
   .collections-grid { grid-template-columns:1fr; }
   .collections-grid .collection-card:last-child { grid-column:auto; }
   .featured,.collections,.dm-section,.story{ padding:4rem 1.5rem; }
@@ -503,7 +505,11 @@
 .collection-card:hover .col-logo-mark-img { opacity: 1; transform: scale(1.06); }
 
 /* ─── REVIEWS SECTION ─── */
-.reviews-section { background: var(--bg); padding: 7rem 4rem; }
+.reviews-section {
+  background: var(--bg); padding: 6rem 4rem;
+  min-height: 100vh; box-sizing: border-box;
+  display: flex; flex-direction: column; justify-content: center;
+}
 .reviews-carousel { display: flex; align-items: center; gap: 1.25rem; max-width: 1200px; margin: 0 auto; }
 .reviews-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2.25rem 1.75rem; flex: 1; min-width: 0; padding: .5rem 0 1rem; }
 .review-arrow {
@@ -563,20 +569,20 @@
 /* Styled to match the review cards above: same ivory strip paper,
    grain texture, and a tapered dipped tip — kept as a decorative
    footer well below the form controls so nothing clickable is clipped. */
-.review-form-wrap { display: flex; justify-content: center; margin: 4rem auto 0; max-width: 1200px; }
+.review-form-wrap { display: flex; justify-content: center; margin: 4rem auto 0; max-width: 1200px; width: 100%; }
 .review-form-card {
   background-color: var(--strip-paper);
   background-image:
     linear-gradient(180deg, rgba(196,162,112,.14) 0%, rgba(196,162,112,0) 30%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   box-shadow: 0 14px 32px rgba(var(--ink-rgb),.14);
-  padding: 3rem 2.75rem 5.5rem; max-width: 540px; width: 100%; text-align: center;
+  padding: 2.75rem 3.25rem 4.5rem; max-width: 900px; width: 100%; text-align: center;
   position: relative; border-top: 3px solid var(--gold);
-  clip-path: polygon(0 0, 100% 0, 100% 90%, 50% 100%, 0 90%);
+  clip-path: polygon(0 0, 100% 0, 100% 91%, 50% 100%, 0 91%);
 }
 .review-form-card::after {
   content: ''; position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
-  width: 55%; height: 28%; pointer-events: none; z-index: 0;
+  width: 40%; height: 24%; pointer-events: none; z-index: 0;
   background: radial-gradient(ellipse at 50% 100%, rgba(196,162,112,.38) 0%, rgba(196,162,112,.13) 45%, transparent 75%);
 }
 .review-form-eyebrow {
@@ -585,12 +591,18 @@
   margin-bottom: .9rem; position: relative; z-index: 1;
 }
 .review-form-title { font-family: var(--serif); font-size: 1.55rem; font-weight: 500; color:var(--ink); margin-bottom: .5rem; position: relative; z-index: 1; }
-.review-form-sub { font-family: var(--serif2); font-style: italic; font-size: .95rem; color: var(--muted); margin-bottom: 2.2rem; position: relative; z-index: 1; }
-#reviewForm { display: flex; flex-direction: column; gap: 1.4rem; position: relative; z-index: 1; }
+.review-form-sub { font-family: var(--serif2); font-style: italic; font-size: .95rem; color: var(--muted); margin-bottom: 2rem; position: relative; z-index: 1; }
+#reviewForm { position: relative; z-index: 1; }
 
-.star-picker-wrap { display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+.review-form-cols { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2.75rem; text-align: left; }
+.review-form-col { display: flex; flex-direction: column; gap: 1.3rem; }
+.review-form-col:last-child { }
+.review-form-field-grow { flex: 1; }
+.review-form-field-grow textarea { height: 100%; min-height: 140px; }
+
+.star-picker-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: .7rem; }
 .star-picker-label { font-family: var(--sans); font-size: .62rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
-.star-picker { display: flex; justify-content: center; gap: .4rem; }
+.star-picker { display: flex; justify-content: flex-start; gap: .4rem; }
 .star-btn {
   background: none; border: none; cursor: pointer; padding: 0;
   font-size: 2.1rem; line-height: 1; color: rgba(var(--ink-rgb),.13);
@@ -618,6 +630,10 @@
 @media(max-width:1024px) {
   .reviews-section { padding: 5rem 2.5rem; }
   .reviews-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media(max-width:860px) {
+  .review-form-cols { grid-template-columns: 1fr; gap: 1.8rem; }
+  .review-form-field-grow textarea { min-height: 140px; }
 }
 @media(max-width:640px) {
   .reviews-section { padding: 4rem 1.5rem; }

@@ -465,13 +465,21 @@
             style="font-weight:300;text-transform:none;letter-spacing:0">(comma-separated)</span></label><input
           class="form-input" id="fpNotes" placeholder="Oud, Rose, Amber, Musk, Sandalwood" /></div>
       <div class="dash-form-grid">
-        <div class="form-group"><label class="form-label">Badge Label</label><input class="form-input" id="fpBadge"
-            placeholder="e.g. Bestseller" /></div>
+        <div class="form-group"><label class="form-label">Badge</label><select class="form-input" id="fpBadge">
+            <option value="">None</option>
+            <option value="Bestseller">Bestseller</option>
+            <option value="New Arrival">New Arrival</option>
+          </select></div>
         <div class="form-group"><label class="form-label">In Stock</label><select class="form-input" id="fpStock">
             <option value="true">Yes — In Stock</option>
             <option value="false">No — Out of Stock</option>
           </select></div>
       </div>
+      <div class="form-group"><label class="form-label">Featured on Homepage</label><select class="form-input"
+          id="fpFeatured">
+          <option value="false">No</option>
+          <option value="true">Yes — show in "Our Signature Scents"</option>
+        </select></div>
       <div id="fpError"
         style="color:var(--danger);font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>
       <div style="display:flex;gap:1rem;margin-top:.5rem">

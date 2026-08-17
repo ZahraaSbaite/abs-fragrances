@@ -109,6 +109,7 @@ function openProductForm(existingId) {
   brandSel.innerHTML = '<option value="">Select brand…</option>' +
     Object.values(BRANDS).map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   brandSel.value = ''; document.getElementById('fpStock').value = 'true';
+  document.getElementById('fpFeatured').value = 'false';
   document.getElementById('fpError').style.display = 'none';
   document.getElementById('photoPreviewImg').style.display = 'none';
   document.getElementById('photoPlaceholder').style.display = 'flex';
@@ -126,6 +127,7 @@ function openProductForm(existingId) {
       document.getElementById('fpNotes').value = (p.notes || []).join(', ');
       document.getElementById('fpBadge').value = p.badge || '';
       document.getElementById('fpStock').value = p.stock === false ? 'false' : 'true';
+      document.getElementById('fpFeatured').value = p.isFeatured ? 'true' : 'false';
       document.getElementById('fpPrice').value = p.priceCents != null ? (p.priceCents / 100).toFixed(2) : '';
       if (p.image) {
         document.getElementById('fpPhoto').value = p.image;
@@ -150,8 +152,9 @@ async function saveProductForm() {
   const shortDesc = document.getElementById('fpShortDesc').value.trim();
   const fullDesc = document.getElementById('fpFullDesc').value.trim();
   const notes = document.getElementById('fpNotes').value.split(',').map(n => n.trim()).filter(Boolean);
-  const badge = document.getElementById('fpBadge').value.trim();
+  const badge = document.getElementById('fpBadge').value;
   const stock = document.getElementById('fpStock').value === 'true';
+  const featured = document.getElementById('fpFeatured').value === 'true';
   const photo = document.getElementById('fpPhoto').value.trim();
   const priceStr = document.getElementById('fpPrice').value.trim();
 
@@ -160,11 +163,12 @@ async function saveProductForm() {
   if (!shortDesc) { errEl.textContent = 'Short description is required'; errEl.style.display = 'block'; return; }
   if (!priceStr || isNaN(parseFloat(priceStr))) { errEl.textContent = 'Please enter a valid price'; errEl.style.display = 'block'; return; }
 
+  const badgeClass = badge === 'Bestseller' ? 'badge-best' : badge === 'New Arrival' ? 'badge-new' : '';
   const body = {
     name, brand_id: brand, gender, intensity,
     short_desc: shortDesc, full_desc: fullDesc || shortDesc,
-    notes, badge, badge_class: badge ? 'badge-gold' : '',
-    in_stock: stock, image_url: photo || null,
+    notes, badge, badge_class: badgeClass,
+    in_stock: stock, image_url: photo || null, is_featured: featured,
     price_cents: Math.round(parseFloat(priceStr) * 100),
   };
 
@@ -212,6 +216,23 @@ function deleteProduct(id) {
       renderProducts();
     } catch (err) { showToast('Could not reach the server.', 'error'); }
   });
+}
+
+async function toggleFeatured(id) {
+  const p = PRODUCTS[id]; if (!p) return;
+  const next = !p.isFeatured;
+  try {
+    const res = await fetch(`${API_BASE}/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ is_featured: next }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Failed to update product', 'error'); return; }
+    showToast(next ? `"${p.name}" added to Signature Scents` : `"${p.name}" removed from Signature Scents`, 'success');
+    await loadProductsData();
+    renderProducts();
+  } catch (err) { showToast('Could not reach the server.', 'error'); }
 }
 
 /* ── OVERVIEW ── */
@@ -343,12 +364,13 @@ function renderProdRows(prods) {
     const stockBadge = p.stock !== false ? `<span style="font-size:.6rem;font-family:var(--sans);font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .6rem;background:rgba(39,174,96,.12);color:#2e7d32">In Stock</span>` : `<span style="font-size:.6rem;font-family:var(--sans);font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .6rem;background:rgba(192,57,43,.08);color:var(--danger)">Out</span>`;
     return `<tr data-name="${(p.name || '').toLowerCase()}" data-brand="${p.brand || ''}" data-gender="${p.gender || ''}">
       <td><div style="width:48px;height:56px;overflow:hidden;background:var(--bg)">${thumb}${fallback}</div></td>
-      <td><div style="font-weight:400;font-size:.82rem;color:var(--navy)">${esc(p.name)}</div>${p.badge ? `<span style="font-size:.55rem;font-family:var(--sans);font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .5rem;background:rgba(196,162,112,.15);color:var(--gold)">${esc(p.badge)}</span>` : ''}</td>
+      <td><div style="font-weight:400;font-size:.82rem;color:var(--navy);display:flex;align-items:center;gap:.4rem">${esc(p.name)}${p.isFeatured ? '<span title="Featured on homepage">⭐</span>' : ''}</div>${p.badge ? `<span style="font-size:.55rem;font-family:var(--sans);font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .5rem;background:rgba(196,162,112,.15);color:var(--gold)">${esc(p.badge)}</span>` : ''}</td>
       <td style="font-size:.78rem">${getBrandEmoji(p.brand)} ${esc(getBrandName(p.brand))}</td>
       <td style="font-size:.75rem;color:var(--muted)">${p.gender}</td>
       <td style="font-size:.8rem;font-weight:500">${p.price}</td>
       <td>${stockBadge}</td>
       <td><div style="display:flex;gap:.4rem">
+        <button class="btn btn-outline btn-sm" title="${p.isFeatured ? 'Remove from homepage' : 'Feature on homepage'}" onclick="toggleFeatured('${p.id}')">${p.isFeatured ? '⭐' : '☆'}</button>
         <button class="btn btn-outline btn-sm" onclick="openProductForm('${p.id}')">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit
         </button>

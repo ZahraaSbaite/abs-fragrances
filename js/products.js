@@ -19,7 +19,7 @@ function mapProduct(row) {
     badge: row.badge || '', badgeClass: row.badge_class || '',
     priceCents: row.price_cents, price: formatPrice(row.price_cents),
     intensity: row.intensity || '', stock: row.in_stock !== false,
-    image: row.image_url || null,
+    image: row.image_url || null, isFeatured: row.is_featured === true,
   };
 }
 
