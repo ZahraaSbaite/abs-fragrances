@@ -46,8 +46,18 @@ function refreshPendingBadge() {
   const b = document.getElementById('pendingBadge'); if (b) { b.textContent = cnt; b.style.display = cnt > 0 ? '' : 'none'; }
 }
 let messagesCache = [];
+let messagesLoadError = null;
 async function loadMessagesData() {
-  messagesCache = await Messages.fetchAll(getToken());
+  // Swallowed on purpose: a failure here (e.g. backend not yet redeployed
+  // with this route) must not block orders/products from loading in the
+  // overview's Promise.all — see renderMessages() for the error state.
+  try {
+    messagesCache = await Messages.fetchAll(getToken());
+    messagesLoadError = null;
+  } catch (err) {
+    messagesCache = [];
+    messagesLoadError = err.message || 'Failed to load messages';
+  }
   const b = document.getElementById('messagesBadge'); if (b) { b.textContent = messagesCache.length; b.style.display = messagesCache.length > 0 ? '' : 'none'; }
   return messagesCache;
 }
@@ -811,6 +821,14 @@ async function saveReviewForm() {
 
 /* ── CUSTOMER MESSAGES (from the "Send us a Message" contact form) ── */
 function renderMessages() {
+  if (messagesLoadError) {
+    document.getElementById('dashContent').innerHTML = `
+      <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05);padding:3rem;text-align:center">
+        <p style="font-family:var(--sans);font-size:.85rem;color:var(--danger);margin-bottom:1rem">Could not load messages: ${esc(messagesLoadError)}</p>
+        <button class="btn btn-outline btn-sm" onclick="switchView('messages')">Retry</button>
+      </div>`;
+    return;
+  }
   const html = `
     <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05)">
       <div class="admin-filter-bar">
