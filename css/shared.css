@@ -43,7 +43,7 @@
     --ink-rgb: 237,234,228;
     --bg-rgb: 16,24,29;
     --muted: #94a8b0;
-    --accent: #3a6178;
+    --accent: #8a713f;
   }
 }
 html[data-theme="dark"] body.storefront {
@@ -53,7 +53,7 @@ html[data-theme="dark"] body.storefront {
   --ink-rgb: 237,234,228;
   --bg-rgb: 16,24,29;
   --muted: #94a8b0;
-  --accent: #3a6178;
+  --accent: #8a713f;
 }
 
 html { scroll-behavior: smooth; }
@@ -87,7 +87,7 @@ body {
 /* ─── BUTTONS ─── */
 .btn { display: inline-flex; align-items: center; gap: .6rem; cursor: pointer; border: none; font-family: var(--sans); font-size: .75rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; text-decoration: none; padding: .9rem 2rem; transition: all .3s var(--ease); }
 .btn-navy  { background: var(--accent); color:var(--paper); }
-.btn-navy:hover { background: #1d4f62; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--ink-rgb),.25); }
+.btn-navy:hover { background: var(--gold); color: var(--white); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--ink-rgb),.25); }
 .btn-gold  { background: var(--gold); color: var(--white); }
 .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(196,162,112,.35); }
 .btn-outline { background: transparent; color:var(--ink); border: 1px solid rgba(var(--ink-rgb),.25); }
