@@ -534,124 +534,96 @@ function deleteBrand(id) {
   });
 }
 
-/* ── MANAGE CATEGORIES ── */
-let categoriesCache = [];
-async function loadCategoriesData() {
-  const res = await fetch(`${API_BASE}/categories`);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to fetch categories');
-  categoriesCache = data.categories || [];
-  return categoriesCache;
-}
-function renderCategories() {
+/* ── SIGNATURE SCENTS (homepage featured perfumes) ── */
+function renderSignatureScents() {
+  const all = Object.values(PRODUCTS);
+  const featured = all.filter(p => p.isFeatured);
+  const notFeatured = all.filter(p => !p.isFeatured);
   const html = `
-    <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05)">
+    <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05);margin-bottom:1.5rem">
       <div class="admin-filter-bar" style="justify-content:space-between">
-        <span style="font-family:var(--sans);font-size:.72rem;color:var(--muted)">${categoriesCache.length} categories</span>
-        <button class="btn btn-gold btn-sm" onclick="openCategoryForm()">+ Add Category</button>
+        <span style="font-family:var(--sans);font-size:.72rem;color:var(--muted)">${featured.length} featured on homepage</span>
+        <div style="display:flex;gap:.6rem;align-items:center">
+          <select id="ssAddSelect" style="font-family:var(--sans);font-size:.72rem;padding:.45rem .7rem;border:1px solid rgba(22,56,70,.18);background:var(--white);color:var(--navy);outline:none;cursor:pointer">
+            <option value="">${notFeatured.length ? 'Select a perfume to feature…' : 'All perfumes are already featured'}</option>
+            ${notFeatured.map(p => `<option value="${p.id}">${esc(p.name)} — ${esc(getBrandName(p.brand))}</option>`).join('')}
+          </select>
+          <button class="btn btn-gold btn-sm" onclick="addToSignatureScents()">+ Add</button>
+        </div>
       </div>
       <table class="data-table">
-        <thead><tr><th style="width:60px">Icon</th><th>Name</th><th>ID</th><th>Description</th><th>Actions</th></tr></thead>
-        <tbody>${renderCategoryRows(categoriesCache)}</tbody>
+        <thead><tr><th style="width:60px">Photo</th><th>Perfume</th><th>Brand</th><th>Badge</th><th>Actions</th></tr></thead>
+        <tbody>${renderSignatureScentRows(featured)}</tbody>
       </table>
     </div>`;
   document.getElementById('dashContent').innerHTML = html;
 }
-function renderCategoryRows(categories) {
-  if (!categories.length) return `<tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--muted)">No categories yet.</td></tr>`;
-  return categories.map(c => `<tr>
-    <td style="font-size:1.4rem">${c.icon || '🏷️'}</td>
-    <td style="font-weight:400;font-size:.85rem;color:var(--navy)">${esc(c.name)}</td>
-    <td style="font-size:.75rem;color:var(--muted)">${esc(c.id)}</td>
-    <td style="font-size:.75rem;color:var(--muted);max-width:280px">${esc(c.description || '—')}</td>
-    <td><div style="display:flex;gap:.4rem">
-      <button class="btn btn-outline btn-sm" onclick="openCategoryForm('${c.id}')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit
-      </button>
-      <button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Del
-      </button>
-    </div></td>
-  </tr>`).join('');
+function renderSignatureScentRows(prods) {
+  if (!prods.length) return `<tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--muted)">No perfumes featured on the homepage yet. Use the dropdown above to add one.</td></tr>`;
+  return prods.map(p => {
+    const thumb = p.image ? `<img src="${esc(p.image)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextSibling.style.display='flex'">` : '';
+    const fallback = `<span style="${p.image ? 'display:none;' : ''}width:100%;height:100%;align-items:center;justify-content:center;font-size:1.4rem;display:flex">${getBrandEmoji(p.brand)}</span>`;
+    return `<tr>
+      <td><div style="width:48px;height:56px;overflow:hidden;background:var(--bg)">${thumb}${fallback}</div></td>
+      <td style="font-weight:400;font-size:.85rem;color:var(--navy)">${esc(p.name)}</td>
+      <td style="font-size:.78rem">${getBrandEmoji(p.brand)} ${esc(getBrandName(p.brand))}</td>
+      <td>
+        <select style="font-family:var(--sans);font-size:.72rem;padding:.4rem .6rem;border:1px solid rgba(22,56,70,.18);background:var(--white);color:var(--navy);outline:none;cursor:pointer" onchange="setSignatureScentBadge('${p.id}',this.value)">
+          <option value="" ${!p.badge ? 'selected' : ''}>None</option>
+          <option value="Bestseller" ${p.badge === 'Bestseller' ? 'selected' : ''}>Bestseller</option>
+          <option value="New Arrival" ${p.badge === 'New Arrival' ? 'selected' : ''}>New Arrival</option>
+        </select>
+      </td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="removeFromSignatureScents('${p.id}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Remove
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
-function openCategoryForm(existingId) {
-  document.getElementById('cfError').style.display = 'none';
-  const idInput = document.getElementById('cfIdInput');
-  if (existingId) {
-    const c = categoriesCache.find(x => x.id === existingId);
-    document.getElementById('categoryFormTitle').textContent = 'Edit Category';
-    document.getElementById('cfId').value = existingId;
-    idInput.value = existingId; idInput.disabled = true;
-    document.getElementById('cfName').value = c?.name || '';
-    document.getElementById('cfIcon').value = c?.icon || '';
-    document.getElementById('cfDesc').value = c?.description || '';
-  } else {
-    document.getElementById('categoryFormTitle').textContent = 'Add New Category';
-    document.getElementById('cfId').value = '';
-    idInput.value = ''; idInput.disabled = false;
-    document.getElementById('cfName').value = '';
-    document.getElementById('cfIcon').value = '';
-    document.getElementById('cfDesc').value = '';
-  }
-  document.getElementById('categoryFormOverlay').classList.add('open');
-}
-function closeCategoryForm() { document.getElementById('categoryFormOverlay').classList.remove('open'); }
-
-async function saveCategoryForm() {
-  const errEl = document.getElementById('cfError'); errEl.style.display = 'none';
-  const existingId = document.getElementById('cfId').value;
-  const idVal = document.getElementById('cfIdInput').value.trim();
-  const name = document.getElementById('cfName').value.trim();
-  const icon = document.getElementById('cfIcon').value.trim();
-  const description = document.getElementById('cfDesc').value.trim();
-
-  if (!name) { errEl.textContent = 'Category name is required'; errEl.style.display = 'block'; return; }
-  if (!existingId && !idVal) { errEl.textContent = 'Category ID is required'; errEl.style.display = 'block'; return; }
-
-  try {
-    let res;
-    if (existingId) {
-      res = await fetch(`${API_BASE}/categories/${existingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ name, icon, description }),
-      });
-    } else {
-      res = await fetch(`${API_BASE}/categories`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ id: idVal, name, icon, description }),
-      });
-    }
-    const data = await res.json();
-    if (!res.ok) { errEl.textContent = data.error || 'Failed to save category'; errEl.style.display = 'block'; return; }
-
-    showToast('"' + name + '" ' + (existingId ? 'updated' : 'added') + '!', 'success');
-    closeCategoryForm();
-    await loadCategoriesData();
-    if (currentView === 'categories') renderCategories();
-  } catch (err) {
-    errEl.textContent = 'Could not reach the server.'; errEl.style.display = 'block';
-  }
-}
-
-function deleteCategory(id) {
-  const c = categoriesCache.find(x => x.id === id);
-  const name = c?.name || id;
-  confirm2('Delete "' + name + '"?', 'This category will be permanently removed.', async () => {
-    try {
-      const res = await fetch(`${API_BASE}/categories/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const data = await res.json();
-      if (!res.ok) { showToast(data.error || 'Failed to delete category', 'error'); return; }
-      showToast('"' + name + '" deleted');
-      await loadCategoriesData();
-      renderCategories();
-    } catch (err) { showToast('Could not reach the server.', 'error'); }
+async function updateProductFields(id, fields) {
+  const res = await fetch(`${API_BASE}/products/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+    body: JSON.stringify(fields),
   });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to update product');
+  return data.product;
+}
+
+async function addToSignatureScents() {
+  const sel = document.getElementById('ssAddSelect');
+  const id = sel.value;
+  if (!id) return;
+  const p = PRODUCTS[id];
+  try {
+    await updateProductFields(id, { is_featured: true });
+    showToast(`"${p?.name || id}" added to Signature Scents`, 'success');
+    await loadProductsData();
+    renderSignatureScents();
+  } catch (err) { showToast(err.message || 'Could not reach the server.', 'error'); }
+}
+
+async function removeFromSignatureScents(id) {
+  const p = PRODUCTS[id];
+  try {
+    await updateProductFields(id, { is_featured: false });
+    showToast(`"${p?.name || id}" removed from Signature Scents`);
+    await loadProductsData();
+    renderSignatureScents();
+  } catch (err) { showToast(err.message || 'Could not reach the server.', 'error'); }
+}
+
+async function setSignatureScentBadge(id, badge) {
+  const badgeClass = badge === 'Bestseller' ? 'badge-best' : badge === 'New Arrival' ? 'badge-new' : '';
+  try {
+    await updateProductFields(id, { badge, badge_class: badgeClass });
+    await loadProductsData();
+    renderSignatureScents();
+  } catch (err) { showToast(err.message || 'Could not reach the server.', 'error'); }
 }
 
 /* ── CUSTOMER REVIEWS ── */
@@ -806,7 +778,7 @@ async function saveProfile() {
 /* ── VIEW ROUTER ── */
 let currentView = 'overview';
 let viewToken = 0; // bumped on every switchView call; a stale (superseded) call's render is dropped
-const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', categories: 'Manage Categories', reviews: 'Customer Reviews', profile: 'Admin Profile' };
+const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', reviews: 'Customer Reviews', profile: 'Admin Profile' };
 async function switchView(view) {
   const myToken = ++viewToken;
   currentView = view;
@@ -823,7 +795,7 @@ async function switchView(view) {
   else if (view === 'products') { await loadProductsData(); if (myToken !== viewToken) return; renderProducts(); }
   else if (view === 'addProduct') { await loadProductsData(); if (myToken !== viewToken) return; openProductForm(); switchView('products'); return; }
   else if (view === 'brands') { await loadProductsData(); if (myToken !== viewToken) return; renderBrands(); }
-  else if (view === 'categories') { await loadCategoriesData(); if (myToken !== viewToken) return; renderCategories(); }
+  else if (view === 'signatureScents') { await loadProductsData(); if (myToken !== viewToken) return; renderSignatureScents(); }
   else if (view === 'reviews') { await loadReviewsData(); if (myToken !== viewToken) return; renderReviews(); }
   else if (view === 'profile') { renderProfile(); }
 }

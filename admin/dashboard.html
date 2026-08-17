@@ -533,29 +533,6 @@
     </div>
   </div>
 
-  <div class="form-overlay" id="categoryFormOverlay">
-    <div class="form-panel" style="max-width:420px">
-      <button class="form-close" onclick="closeCategoryForm()">✕</button>
-      <div class="form-panel-title" id="categoryFormTitle">Add New Category</div>
-      <input type="hidden" id="cfId" />
-      <div class="form-group"><label class="form-label">Category ID (slug) *</label><input class="form-input"
-          id="cfIdInput" placeholder="e.g. signature-line" /></div>
-      <div class="form-group"><label class="form-label">Category Name *</label><input class="form-input" id="cfName"
-          placeholder="e.g. Signature Line" /></div>
-      <div class="form-group"><label class="form-label">Icon (emoji)</label><input class="form-input" id="cfIcon"
-          placeholder="e.g. ✨" maxlength="4" /></div>
-      <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="cfDesc"
-          style="min-height:70px" placeholder="Short blurb shown under the name"></textarea></div>
-      <div id="cfError"
-        style="color:var(--danger);font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>
-      <div style="display:flex;gap:1rem;margin-top:.5rem">
-        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveCategoryForm()">Save
-          Category</button>
-        <button class="btn btn-outline" onclick="closeCategoryForm()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <div class="form-overlay" id="reviewFormOverlay">
     <div class="form-panel" style="max-width:460px">
       <button class="form-close" onclick="closeReviewForm()">✕</button>
@@ -650,13 +627,10 @@
             <circle cx="7.5" cy="7.5" r="1.2" />
           </svg>Manage Brands
         </button>
-        <button class="sidebar-link" data-view="categories">
+        <button class="sidebar-link" data-view="signatureScents">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-            <circle cx="17.5" cy="17.5" r="3.5" />
-          </svg>Manage Categories
+            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+          </svg>Signature Scents
         </button>
         <div class="sidebar-section-label">Reviews</div>
         <button class="sidebar-link" data-view="reviews">

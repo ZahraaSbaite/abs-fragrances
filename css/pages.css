@@ -318,8 +318,19 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
 .contact-item-icon{ width:40px; height:40px; background:rgba(196,162,112,.1); display:flex; align-items:center; justify-content:center; color:var(--gold); flex-shrink:0; font-size:1.1rem; }
 .contact-item-label{ font-family:var(--sans); font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:.2rem; }
 .contact-item-val  { font-family:var(--sans); font-size:.88rem; color:var(--ink); }
-.contact-form    { background:var(--white); padding:2.5rem; box-shadow:var(--shadow-sm); }
-.contact-form h3 { font-family:var(--serif); font-size:1.4rem; color:var(--ink); margin-bottom:1.5rem; }
+.contact-form    { background:var(--white); padding:2.75rem; box-shadow:var(--shadow-md); border-top:3px solid var(--gold); }
+.contact-form h3 { font-family:var(--serif); font-size:1.4rem; color:var(--ink); margin-bottom:1.75rem; }
+.contact-form .form-group { display:flex; flex-direction:column; gap:.55rem; margin-bottom:1.4rem; }
+.contact-form .form-label { font-family:var(--sans); font-size:.62rem; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); }
+.contact-form .form-input {
+  font-family:var(--sans); font-size:.85rem; color:var(--ink);
+  padding:.8rem 1rem; border:1px solid rgba(var(--ink-rgb),.16);
+  background:var(--bg); outline:none; width:100%; box-sizing:border-box;
+  transition:border-color .2s, box-shadow .2s, background .2s;
+}
+.contact-form select.form-input { cursor:pointer; }
+.contact-form textarea.form-input { resize:vertical; }
+.contact-form .form-input:focus { border-color:var(--gold); background:var(--white); box-shadow:0 0 0 3px rgba(196,162,112,.12); }
 
 /* ─── PRODUCT DETAIL MODAL (full) ─── */
 .modal-lg { max-width:600px; }
