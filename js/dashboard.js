@@ -541,14 +541,15 @@ function renderSignatureScents() {
   const notFeatured = all.filter(p => !p.isFeatured);
   const html = `
     <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05);margin-bottom:1.5rem">
-      <div class="admin-filter-bar" style="justify-content:space-between">
+      <div class="admin-filter-bar" style="justify-content:space-between;flex-wrap:wrap;gap:.8rem">
         <span style="font-family:var(--sans);font-size:.72rem;color:var(--muted)">${featured.length} featured on homepage</span>
-        <div style="display:flex;gap:.6rem;align-items:center">
+        <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
           <select id="ssAddSelect" style="font-family:var(--sans);font-size:.72rem;padding:.45rem .7rem;border:1px solid rgba(22,56,70,.18);background:var(--white);color:var(--navy);outline:none;cursor:pointer">
-            <option value="">${notFeatured.length ? 'Select a perfume to feature…' : 'All perfumes are already featured'}</option>
+            <option value="">${notFeatured.length ? 'Feature an existing perfume…' : 'All perfumes are already featured'}</option>
             ${notFeatured.map(p => `<option value="${p.id}">${esc(p.name)} — ${esc(getBrandName(p.brand))}</option>`).join('')}
           </select>
-          <button class="btn btn-gold btn-sm" onclick="addToSignatureScents()">+ Add</button>
+          <button class="btn btn-outline btn-sm" onclick="addToSignatureScents()">+ Feature Existing</button>
+          <button class="btn btn-gold btn-sm" onclick="openSignatureScentForm()">+ Add New Perfume</button>
         </div>
       </div>
       <table class="data-table">
@@ -624,6 +625,95 @@ async function setSignatureScentBadge(id, badge) {
     await loadProductsData();
     renderSignatureScents();
   } catch (err) { showToast(err.message || 'Could not reach the server.', 'error'); }
+}
+
+/* Same background swatches as the homepage cards (css/landing.css
+   .type-bestseller-bg / .type-new-bg), so the admin preview matches
+   what the visitor will actually see. */
+const SIGNATURE_TYPE_GRADIENTS = {
+  '': 'linear-gradient(145deg,#e5e5e5,#cfcfcf,#b8b8b8)',
+  'Bestseller': 'linear-gradient(145deg,#f5ede0,#ead5b5,#d4b888)',
+  'New Arrival': 'linear-gradient(145deg,#e8eff4,#d0dde8,#b8ccda)',
+};
+
+function updateSignatureScentTypePreview() {
+  const type = document.getElementById('ssType').value;
+  document.getElementById('ssTypeSwatch').style.background = SIGNATURE_TYPE_GRADIENTS[type] || SIGNATURE_TYPE_GRADIENTS[''];
+}
+
+function previewSignatureScentPhotoUrl() {
+  const url = document.getElementById('ssPhoto').value.trim();
+  const img = document.getElementById('ssPhotoPreviewImg');
+  const ph = document.getElementById('ssPhotoPlaceholder');
+  if (url) { img.src = url; img.style.display = 'block'; ph.style.display = 'none'; img.onerror = () => { img.style.display = 'none'; ph.style.display = 'flex'; }; }
+  else { img.style.display = 'none'; ph.style.display = 'flex'; }
+}
+function handleSignatureScentPhotoUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const d = e.target.result; document.getElementById('ssPhoto').value = d;
+    const img = document.getElementById('ssPhotoPreviewImg');
+    img.src = d; img.style.display = 'block'; document.getElementById('ssPhotoPlaceholder').style.display = 'none';
+  }; reader.readAsDataURL(input.files[0]);
+}
+
+function openSignatureScentForm() {
+  document.getElementById('ssError').style.display = 'none';
+  ['ssName', 'ssDesc', 'ssPhoto', 'ssPrice'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('ssGender').value = 'Men';
+  document.getElementById('ssType').value = '';
+  updateSignatureScentTypePreview();
+  document.getElementById('ssPhotoPreviewImg').style.display = 'none';
+  document.getElementById('ssPhotoPlaceholder').style.display = 'flex';
+  const brandSel = document.getElementById('ssBrand');
+  brandSel.innerHTML = '<option value="">Select brand…</option>' +
+    Object.values(BRANDS).map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  brandSel.value = '';
+  document.getElementById('signatureScentFormOverlay').classList.add('open');
+}
+function closeSignatureScentForm() { document.getElementById('signatureScentFormOverlay').classList.remove('open'); }
+
+async function saveSignatureScentForm() {
+  const errEl = document.getElementById('ssError'); errEl.style.display = 'none';
+  const name = document.getElementById('ssName').value.trim();
+  const brand = document.getElementById('ssBrand').value;
+  const gender = document.getElementById('ssGender').value;
+  const priceStr = document.getElementById('ssPrice').value.trim();
+  const shortDesc = document.getElementById('ssDesc').value.trim();
+  const photo = document.getElementById('ssPhoto').value.trim();
+  const type = document.getElementById('ssType').value;
+
+  if (!name) { errEl.textContent = 'Perfume name is required'; errEl.style.display = 'block'; return; }
+  if (!brand) { errEl.textContent = 'Please select a brand'; errEl.style.display = 'block'; return; }
+  if (!shortDesc) { errEl.textContent = 'Short description is required'; errEl.style.display = 'block'; return; }
+  if (!priceStr || isNaN(parseFloat(priceStr))) { errEl.textContent = 'Please enter a valid price'; errEl.style.display = 'block'; return; }
+
+  const badgeClass = type === 'Bestseller' ? 'badge-best' : type === 'New Arrival' ? 'badge-new' : '';
+  const body = {
+    id: slugify(name), name, brand_id: brand, gender,
+    short_desc: shortDesc, full_desc: shortDesc,
+    badge: type, badge_class: badgeClass,
+    in_stock: true, image_url: photo || null, is_featured: true,
+    price_cents: Math.round(parseFloat(priceStr) * 100),
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Failed to save perfume'; errEl.style.display = 'block'; return; }
+
+    showToast('"' + name + '" added to Signature Scents!', 'success');
+    closeSignatureScentForm();
+    await loadProductsData();
+    renderSignatureScents();
+  } catch (err) {
+    errEl.textContent = 'Could not reach the server.'; errEl.style.display = 'block';
+  }
 }
 
 /* ── CUSTOMER REVIEWS ── */

@@ -30,14 +30,23 @@ let _featuredList = [];
 let _featuredStart = 0;
 const FEATURED_VISIBLE = 3;
 
+function featuredBgClass(p) {
+  if (p.badge === 'Bestseller') return 'type-bestseller-bg';
+  if (p.badge === 'New Arrival') return 'type-new-bg';
+  return genderBgClass(p.gender);
+}
+
 function featuredCardHTML(p) {
   const brandName = getBrandName(p.brand);
   const emoji = getBrandEmoji(p.brand);
+  const visual = p.image
+    ? `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" style="width:100%;height:100%;object-fit:cover" />`
+    : `<div class="product-emoji" style="font-size:3.8rem;filter:drop-shadow(0 6px 20px rgba(22,56,70,.15))">${emoji}</div>`;
   return `
     <div class="product-card fade-up" data-product="${p.id}" onclick="openProductModal('${p.id}')">
-      <div class="product-img-wrap ${genderBgClass(p.gender)}">
+      <div class="product-img-wrap ${featuredBgClass(p)}">
         ${p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${escapeHtml(p.badge)}</div>` : ''}
-        <div class="product-emoji" style="font-size:3.8rem;filter:drop-shadow(0 6px 20px rgba(22,56,70,.15))">${emoji}</div>
+        ${visual}
       </div>
       <div class="product-info">
         <div class="product-collection">${escapeHtml(brandName)} · ${p.gender}</div>

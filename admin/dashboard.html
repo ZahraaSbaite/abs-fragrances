@@ -573,6 +573,75 @@
     </div>
   </div>
 
+  <div class="form-overlay" id="signatureScentFormOverlay">
+    <div class="form-panel">
+      <button class="form-close" onclick="closeSignatureScentForm()">✕</button>
+      <div class="form-panel-title">Add Perfume to Signature Scents</div>
+      <div class="form-group">
+        <label class="form-label">Photo</label>
+        <div class="photo-preview-wrap" id="ssPhotoPreviewWrap">
+          <div class="photo-preview-placeholder" id="ssPhotoPlaceholder">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <span>Optional — falls back to a brand icon on a colored card</span>
+          </div>
+          <img id="ssPhotoPreviewImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover" />
+        </div>
+        <div style="display:flex;gap:.6rem;align-items:center">
+          <input class="form-input" id="ssPhoto" placeholder="https://... image URL" style="flex:1"
+            oninput="previewSignatureScentPhotoUrl()" />
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;white-space:nowrap;flex-shrink:0">
+            📁 Upload<input type="file" accept="image/*" id="ssPhotoFile" style="display:none"
+              onchange="handleSignatureScentPhotoUpload(this)" />
+          </label>
+        </div>
+      </div>
+      <div class="dash-form-grid">
+        <div class="form-group"><label class="form-label">Perfume Name *</label><input class="form-input" id="ssName"
+            placeholder="e.g. Oud Noir" /></div>
+        <div class="form-group"><label class="form-label">Brand *</label>
+          <select class="form-input" id="ssBrand">
+            <option value="">Select brand…</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Gender *</label>
+          <select class="form-input" id="ssGender">
+            <option value="Men">Men</option>
+            <option value="Women">Women</option>
+            <option value="Unisex">Unisex</option>
+            <option value="Musk">Musk</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Price (USD) *</label><input class="form-input" id="ssPrice"
+            type="number" step="0.01" min="0" placeholder="e.g. 45.00" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Short Description *</label><textarea class="form-input"
+          id="ssDesc" style="min-height:70px" placeholder="One sentence about this perfume"></textarea></div>
+      <div class="form-group">
+        <label class="form-label">Type *</label>
+        <div style="display:flex;gap:.6rem;align-items:center">
+          <select class="form-input" id="ssType" style="flex:1" onchange="updateSignatureScentTypePreview()">
+            <option value="">None</option>
+            <option value="Bestseller">Bestseller</option>
+            <option value="New Arrival">New Arrival</option>
+          </select>
+          <div id="ssTypeSwatch" title="Card background preview"
+            style="width:38px;height:38px;flex-shrink:0;border:1px solid rgba(22,56,70,.18)"></div>
+        </div>
+      </div>
+      <div id="ssError"
+        style="color:var(--danger);font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>
+      <div style="display:flex;gap:1rem;margin-top:.5rem">
+        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveSignatureScentForm()">Add to
+          Signature Scents</button>
+        <button class="btn btn-outline" onclick="closeSignatureScentForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 

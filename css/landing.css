@@ -263,6 +263,13 @@
 .wc-bg    { background:linear-gradient(145deg,#f5ede0,#ead5b5,#d4b888); }
 .sh-bg    { background:linear-gradient(145deg,#e8eff4,#d0dde8,#b8ccda); }
 
+/* Featured-card backgrounds tied to promo type instead of gender, so a
+   Bestseller/New Arrival badge always pairs with the same background —
+   gold-toned for Bestseller (echoes the gold badge), cool navy-toned
+   for New Arrival (echoes the navy/accent badge). */
+.type-bestseller-bg { background:linear-gradient(145deg,#f5ede0,#ead5b5,#d4b888); }
+.type-new-bg        { background:linear-gradient(145deg,#e8eff4,#d0dde8,#b8ccda); }
+
 .product-emoji { transition:transform .5s ease; }
 .product-card:hover .product-emoji { transform:scale(1.08) translateY(-5px); }
 
