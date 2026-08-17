@@ -278,9 +278,9 @@ function renderOrderRows(orders) {
   return orders.map(o => `<tr data-order="${o.id.toLowerCase()}" data-customer="${(o.customer_name || '').toLowerCase()}" data-status="${o.status || ''}">
     <td><strong style="font-size:.78rem">${o.id}</strong></td>
     <td style="font-size:.78rem;color:var(--muted)">${Orders.formatDate(o.placed_at)}</td>
-    <td><div style="font-size:.8rem">${esc(o.customer_name)}</div><div style="font-size:.68rem;color:var(--muted)">${esc(o.customer_phone)}</div><div style="font-size:.68rem;color:var(--muted)">${esc(o.customer_address)}</div></td>
+    <td><div style="font-size:.8rem">${esc(o.customer_name)}</div><div style="font-size:.68rem;color:var(--muted)">${esc(o.customer_phone)}</div>${o.customer_email ? `<div style="font-size:.68rem;color:var(--muted)">${esc(o.customer_email)}</div>` : ''}<div style="font-size:.68rem;color:var(--muted)">${esc(o.customer_address)}</div>${o.location_url ? `<a href="${esc(o.location_url)}" target="_blank" style="font-size:.68rem;color:var(--gold)">📍 View on Map</a>` : ''}</td>
     <td style="font-size:.75rem;color:var(--muted);max-width:180px">${(o.items || []).map(i => `${esc(i.product_name)} ×${i.quantity}`).join('<br/>')}</td>
-    <td style="font-size:.8rem;font-weight:500">${formatPrice(o.total_cents)}</td>
+    <td style="font-size:.8rem;font-weight:500">${formatPrice(o.total_cents)}<div style="font-size:.62rem;color:var(--muted);font-weight:400;margin-top:.2rem">${esc(o.payment_method || 'Cash on Delivery')}</div></td>
     <td>${statusBadge(o.status)}</td>
     <td><select class="status-sel" onchange="setOrderStatus('${o.id}',this.value)"><option value="">Change…</option>${ORDER_STATUSES.map(s => `<option value="${s.key}" ${o.status === s.key ? 'selected' : ''}>${s.label}</option>`).join('')}</select></td>
     <td style="display:flex;gap:.4rem;align-items:center">

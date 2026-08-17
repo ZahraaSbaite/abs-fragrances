@@ -437,6 +437,30 @@
     <h2 class="section-title fade-up delay-1">Customer <em>Stories</em></h2>
     <p class="section-sub fade-up delay-2">Real people. Real scents. Real impressions.</p>
     <div class="reviews-grid" id="reviewsGrid"></div>
+
+    <div class="review-form-wrap fade-up">
+      <div class="review-form-card">
+        <h3 class="review-form-title">Share Your Experience</h3>
+        <p class="review-form-sub">Tried one of our fragrances? Let others know what you think.</p>
+        <form id="reviewForm">
+          <div class="star-picker" id="starPicker" role="radiogroup" aria-label="Rating">
+            <button type="button" class="star-btn" data-star="1" aria-label="1 star">★</button>
+            <button type="button" class="star-btn" data-star="2" aria-label="2 stars">★</button>
+            <button type="button" class="star-btn" data-star="3" aria-label="3 stars">★</button>
+            <button type="button" class="star-btn" data-star="4" aria-label="4 stars">★</button>
+            <button type="button" class="star-btn" data-star="5" aria-label="5 stars">★</button>
+            <input type="hidden" name="stars" id="starsInput" value="0">
+          </div>
+          <div class="review-form-row">
+            <input type="text" name="author_name" placeholder="Your name" maxlength="80" required>
+            <input type="text" name="author_location" placeholder="City (optional)" maxlength="80">
+          </div>
+          <textarea name="review_text" placeholder="Tell us about your experience…" maxlength="1000" required></textarea>
+          <div id="reviewFormError" class="review-form-error" style="display:none"></div>
+          <button type="submit" class="btn btn-gold" id="reviewSubmitBtn" style="justify-content:center">Submit Review</button>
+        </form>
+      </div>
+    </div>
   </section>
 
   <!-- DM CTA -->

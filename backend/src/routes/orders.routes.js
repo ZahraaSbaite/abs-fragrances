@@ -8,10 +8,13 @@ const router = express.Router();
 const DELIVERY_CENTS = 500;
 
 // POST /api/orders — guest checkout, no login required.
-// body: { customer_name, customer_phone, customer_address, note?, items: [{ product_id, quantity }] }
+// body: { customer_name, customer_phone, customer_address, customer_email?, location_url?, payment_method?, note?, items: [{ product_id, quantity }] }
 // Prices are looked up server-side from the products table — never trust client-sent prices.
 router.post('/', async (req, res) => {
-  const { customer_name, customer_phone, customer_address, note, items: cartItems } = req.body;
+  const {
+    customer_name, customer_phone, customer_address, customer_email,
+    location_url, payment_method, note, items: cartItems,
+  } = req.body;
   if (!customer_name || !customer_phone || !customer_address) {
     return res.status(400).json({ error: 'customer_name, customer_phone, and customer_address are required' });
   }
@@ -46,9 +49,12 @@ router.post('/', async (req, res) => {
     const orderId = 'ORD-' + Date.now();
 
     await client.query(
-      `INSERT INTO orders (id, user_id, customer_name, customer_phone, customer_address, note, subtotal_cents, delivery_cents, total_cents)
-       VALUES ($1,NULL,$2,$3,$4,$5,$6,$7,$8)`,
-      [orderId, customer_name, customer_phone, customer_address, note || null, subtotal_cents, DELIVERY_CENTS, total_cents]
+      `INSERT INTO orders
+        (id, user_id, customer_name, customer_phone, customer_email, customer_address, location_url, payment_method, note, subtotal_cents, delivery_cents, total_cents)
+       VALUES ($1,NULL,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [orderId, customer_name, customer_phone, customer_email || null, customer_address,
+        location_url || null, payment_method || 'Cash on Delivery', note || null,
+        subtotal_cents, DELIVERY_CENTS, total_cents]
     );
 
     for (const item of items) {

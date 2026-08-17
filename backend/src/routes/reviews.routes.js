@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const { pool } = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
@@ -12,6 +13,36 @@ router.get('/', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
+});
+
+// POST /api/reviews — public, no login required. Published immediately (no
+// moderation queue) — admin can delete any review after the fact.
+router.post('/', async (req, res) => {
+  const stars = Number(req.body.stars);
+  const review_text = (req.body.review_text || '').trim();
+  const author_name = (req.body.author_name || '').trim();
+  const author_location = (req.body.author_location || '').trim();
+
+  if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+    return res.status(400).json({ error: 'stars must be a whole number from 1 to 5' });
+  }
+  if (!author_name) return res.status(400).json({ error: 'Name is required' });
+  if (!review_text) return res.status(400).json({ error: 'Review text is required' });
+  if (author_name.length > 80) return res.status(400).json({ error: 'Name is too long' });
+  if (review_text.length > 1000) return res.status(400).json({ error: 'Review is too long (max 1000 characters)' });
+
+  try {
+    const id = 'review-' + crypto.randomUUID();
+    const result = await pool.query(
+      `INSERT INTO reviews (id, stars, review_text, author_name, author_location)
+       VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+      [id, stars, review_text, author_name, author_location || null]
+    );
+    res.status(201).json({ review: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to submit review' });
   }
 });
 

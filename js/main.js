@@ -25,7 +25,10 @@ function getBrandName(brandId) {
   return (typeof BRANDS !== 'undefined' && BRANDS[brandId]?.name) || brandId || '—';
 }
 
-/* ─── Homepage: Customer reviews (admin-curated, deletable from the dashboard) ─── */
+/* ─── Homepage: Customer reviews ─── */
+/* Shown reviews are either curated seed data or submitted live by visitors
+ * via the form below the grid (published immediately, no moderation queue).
+ * Admin can delete any of them from the dashboard's Customer Reviews view. */
 async function renderReviewsSection() {
   const grid = document.getElementById('reviewsGrid');
   if (!grid || typeof Reviews === 'undefined') return;
@@ -42,12 +45,55 @@ async function renderReviewsSection() {
             <div class="review-location">${escapeHtml(r.author_location || '')}</div>
           </div>
         </div>
-        <div class="review-product">${escapeHtml(r.product_label || '')}</div>
+        ${r.product_label ? `<div class="review-product">${escapeHtml(r.product_label)}</div>` : ''}
       </div>`).join('');
     grid.querySelectorAll('.fade-up').forEach(el => window.fadeUpObserver?.observe(el));
   } catch (err) {
     console.error('Failed to load reviews:', err);
   }
+}
+
+/* ─── Homepage: "Leave a Review" form ─── */
+function initReviewForm() {
+  const picker = document.getElementById('starPicker');
+  const starsInput = document.getElementById('starsInput');
+  const form = document.getElementById('reviewForm');
+  if (!picker || !starsInput || !form) return;
+
+  const starBtns = [...picker.querySelectorAll('.star-btn')];
+  const paint = n => starBtns.forEach(s => s.classList.toggle('active', Number(s.dataset.star) <= n));
+  starBtns.forEach(s => {
+    s.addEventListener('click', () => { starsInput.value = s.dataset.star; paint(Number(s.dataset.star)); });
+    s.addEventListener('mouseenter', () => paint(Number(s.dataset.star)));
+  });
+  picker.addEventListener('mouseleave', () => paint(Number(starsInput.value)));
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const errEl = document.getElementById('reviewFormError');
+    const btn = document.getElementById('reviewSubmitBtn');
+    errEl.style.display = 'none';
+
+    const stars = Number(starsInput.value);
+    const author_name = form.author_name.value.trim();
+    const author_location = form.author_location.value.trim();
+    const review_text = form.review_text.value.trim();
+    if (!stars) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
+    if (!author_name || !review_text) { errEl.textContent = 'Name and review are required.'; errEl.style.display = 'block'; return; }
+
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      await Reviews.submitReview({ stars, review_text, author_name, author_location });
+      form.reset();
+      starsInput.value = '0'; paint(0);
+      showToast('Thank you for your review! 🎉', 'success');
+      renderReviewsSection();
+    } catch (err) {
+      errEl.textContent = err.message || 'Failed to submit review.'; errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Submit Review';
+    }
+  });
 }
 
 /* ─── Product card HTML (reusable) ─── */
@@ -245,6 +291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.fadeUpObserver = observer; // so content rendered later (e.g. reviews) can opt in too
 
   renderReviewsSection();
+  initReviewForm();
 
   // Product card buttons on landing
   document.querySelectorAll('.product-card').forEach(card => {

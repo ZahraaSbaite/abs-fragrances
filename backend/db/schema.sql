@@ -59,7 +59,10 @@ CREATE TABLE IF NOT EXISTS orders (
   user_id           UUID REFERENCES users(id) ON DELETE SET NULL,
   customer_name     TEXT NOT NULL,
   customer_phone    TEXT NOT NULL,
+  customer_email    TEXT,                      -- optional
   customer_address  TEXT NOT NULL,
+  location_url      TEXT,                      -- optional Google Maps link from "Share my location"
+  payment_method    TEXT NOT NULL DEFAULT 'Cash on Delivery',
   note              TEXT,
   status            TEXT NOT NULL DEFAULT 'Pending'
                       CHECK (status IN ('Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled')),
@@ -69,6 +72,11 @@ CREATE TABLE IF NOT EXISTS orders (
   placed_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Safe to re-run against a database where `orders` already exists without these columns.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_url TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'Cash on Delivery';
 
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 
@@ -85,8 +93,9 @@ CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 
 -- ─────────────────────────────────────────────
 -- REVIEWS
--- Customer testimonials shown on the homepage. Admin-curated (no public
--- submission flow) — admin can delete; seeded rows come from db/seed-data.js.
+-- Customer testimonials shown on the homepage. Anyone can submit one
+-- (published immediately, no moderation queue); admin can delete any
+-- review. Seeded starter rows come from db/seed-data.js.
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS reviews (
   id               TEXT PRIMARY KEY,
