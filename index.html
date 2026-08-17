@@ -454,14 +454,22 @@
               <input type="hidden" name="stars" id="starsInput" value="0">
             </div>
           </div>
+          <div class="review-form-field">
+            <label class="review-form-label">Your Name</label>
+            <input type="text" name="author_name" placeholder="e.g. Rami K." maxlength="80" required>
+          </div>
           <div class="review-form-row">
             <div class="review-form-field">
-              <label class="review-form-label">Your Name</label>
-              <input type="text" name="author_name" placeholder="e.g. Rami K." maxlength="80" required>
+              <label class="review-form-label">Brand</label>
+              <select name="review_brand" id="reviewBrandSelect" required>
+                <option value="">Select brand…</option>
+              </select>
             </div>
             <div class="review-form-field">
-              <label class="review-form-label">Perfume You Got</label>
-              <input type="text" name="product_label" placeholder="e.g. Hawas Éclat" maxlength="80" required>
+              <label class="review-form-label">Perfume</label>
+              <select name="review_perfume" id="reviewPerfumeSelect" required disabled>
+                <option value="">Select brand first…</option>
+              </select>
             </div>
           </div>
           <div class="review-form-field">

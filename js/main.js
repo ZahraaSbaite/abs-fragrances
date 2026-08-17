@@ -95,7 +95,9 @@ function initReviewForm() {
   const picker = document.getElementById('starPicker');
   const starsInput = document.getElementById('starsInput');
   const form = document.getElementById('reviewForm');
-  if (!picker || !starsInput || !form) return;
+  const brandSel = document.getElementById('reviewBrandSelect');
+  const perfumeSel = document.getElementById('reviewPerfumeSelect');
+  if (!picker || !starsInput || !form || !brandSel || !perfumeSel) return;
 
   const starBtns = [...picker.querySelectorAll('.star-btn')];
   const paint = n => starBtns.forEach(s => s.classList.toggle('active', Number(s.dataset.star) <= n));
@@ -105,6 +107,22 @@ function initReviewForm() {
   });
   picker.addEventListener('mouseleave', () => paint(Number(starsInput.value)));
 
+  brandSel.innerHTML = '<option value="">Select brand…</option>' +
+    Object.values(BRANDS).map(b => `<option value="${b.id}">${escapeHtml(b.name)}</option>`).join('');
+
+  brandSel.addEventListener('change', () => {
+    const brandId = brandSel.value;
+    const options = Object.values(PRODUCTS).filter(p => p.brand === brandId);
+    if (!brandId || !options.length) {
+      perfumeSel.innerHTML = `<option value="">${brandId ? 'No perfumes for this brand yet' : 'Select brand first…'}</option>`;
+      perfumeSel.disabled = true;
+      return;
+    }
+    perfumeSel.innerHTML = '<option value="">Select perfume…</option>' +
+      options.map(p => `<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
+    perfumeSel.disabled = false;
+  });
+
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const errEl = document.getElementById('reviewFormError');
@@ -113,16 +131,22 @@ function initReviewForm() {
 
     const stars = Number(starsInput.value);
     const author_name = form.author_name.value.trim();
-    const product_label = form.product_label.value.trim();
+    const brandId = brandSel.value;
+    const brandName = BRANDS[brandId]?.name || '';
+    const perfumeName = perfumeSel.value;
     const review_text = form.review_text.value.trim();
     if (!stars) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
-    if (!author_name || !product_label || !review_text) { errEl.textContent = 'Name, perfume, and review are required.'; errEl.style.display = 'block'; return; }
+    if (!author_name || !brandId || !perfumeName || !review_text) {
+      errEl.textContent = 'Name, brand, perfume, and review are required.'; errEl.style.display = 'block'; return;
+    }
+    const product_label = `${perfumeName} · ${brandName}`;
 
     btn.disabled = true; btn.textContent = 'Submitting…';
     try {
       await Reviews.submitReview({ stars, review_text, author_name, product_label });
       form.reset();
       starsInput.value = '0'; paint(0);
+      perfumeSel.innerHTML = '<option value="">Select brand first…</option>'; perfumeSel.disabled = true;
       showToast('Thank you for your review! 🎉', 'success');
       renderReviewsSection();
     } catch (err) {
