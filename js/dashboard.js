@@ -685,6 +685,10 @@ function openReviewForm() {
   document.getElementById('rfLocation').value = '';
   document.getElementById('rfProduct').value = '';
   document.getElementById('rfText').value = '';
+  const brandSel = document.getElementById('rfBrand');
+  brandSel.innerHTML = '<option value="">Select brand…</option>' +
+    Object.values(BRANDS).map(b => `<option value="${esc(b.name)}">${esc(b.name)}</option>`).join('');
+  brandSel.value = '';
   document.getElementById('reviewFormOverlay').classList.add('open');
 }
 function closeReviewForm() { document.getElementById('reviewFormOverlay').classList.remove('open'); }
@@ -694,12 +698,15 @@ async function saveReviewForm() {
   const stars = Number(document.getElementById('rfStars').value);
   const author_name = document.getElementById('rfName').value.trim();
   const author_location = document.getElementById('rfLocation').value.trim();
-  const product_label = document.getElementById('rfProduct').value.trim();
+  const perfumeName = document.getElementById('rfProduct').value.trim();
+  const brandName = document.getElementById('rfBrand').value;
   const review_text = document.getElementById('rfText').value.trim();
 
   if (!author_name) { errEl.textContent = 'Name is required'; errEl.style.display = 'block'; return; }
-  if (!product_label) { errEl.textContent = 'Perfume is required'; errEl.style.display = 'block'; return; }
+  if (!perfumeName) { errEl.textContent = 'Perfume name is required'; errEl.style.display = 'block'; return; }
   if (!review_text) { errEl.textContent = 'Review text is required'; errEl.style.display = 'block'; return; }
+
+  const product_label = brandName ? `${perfumeName} · ${brandName}` : perfumeName;
 
   try {
     await Reviews.submitReview({ stars, review_text, author_name, product_label, author_location });
