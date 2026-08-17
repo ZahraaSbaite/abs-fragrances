@@ -548,6 +548,39 @@
     </div>
   </div>
 
+  <div class="form-overlay" id="reviewFormOverlay">
+    <div class="form-panel" style="max-width:460px">
+      <button class="form-close" onclick="closeReviewForm()">✕</button>
+      <div class="form-panel-title">Add Review</div>
+      <div class="form-group"><label class="form-label">Stars *</label>
+        <select class="form-input" id="rfStars">
+          <option value="5">★★★★★ (5)</option>
+          <option value="4">★★★★☆ (4)</option>
+          <option value="3">★★★☆☆ (3)</option>
+          <option value="2">★★☆☆☆ (2)</option>
+          <option value="1">★☆☆☆☆ (1)</option>
+        </select>
+      </div>
+      <div class="dash-form-grid">
+        <div class="form-group"><label class="form-label">Customer Name *</label><input class="form-input" id="rfName"
+            placeholder="e.g. Rami K." maxlength="80" /></div>
+        <div class="form-group"><label class="form-label">Location (Optional)</label><input class="form-input"
+            id="rfLocation" placeholder="e.g. Beirut, Lebanon" maxlength="80" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Perfume *</label><input class="form-input" id="rfProduct"
+          placeholder="e.g. Shuhrah · Rasasi" maxlength="80" /></div>
+      <div class="form-group"><label class="form-label">Review Text *</label><textarea class="form-input" id="rfText"
+          style="min-height:100px" maxlength="1000" placeholder="What did they say?"></textarea></div>
+      <div id="rfError"
+        style="color:var(--danger);font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>
+      <div style="display:flex;gap:1rem;margin-top:.5rem">
+        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveReviewForm()">Save
+          Review</button>
+        <button class="btn btn-outline" onclick="closeReviewForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 

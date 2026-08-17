@@ -23,6 +23,7 @@ router.post('/', async (req, res) => {
   const review_text = (req.body.review_text || '').trim();
   const author_name = (req.body.author_name || '').trim();
   const product_label = (req.body.product_label || '').trim();
+  const author_location = (req.body.author_location || '').trim();
 
   if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
     return res.status(400).json({ error: 'stars must be a whole number from 1 to 5' });
@@ -32,14 +33,15 @@ router.post('/', async (req, res) => {
   if (!review_text) return res.status(400).json({ error: 'Review text is required' });
   if (author_name.length > 80) return res.status(400).json({ error: 'Name is too long' });
   if (product_label.length > 80) return res.status(400).json({ error: 'Perfume name is too long' });
+  if (author_location.length > 80) return res.status(400).json({ error: 'Location is too long' });
   if (review_text.length > 1000) return res.status(400).json({ error: 'Review is too long (max 1000 characters)' });
 
   try {
     const id = 'review-' + crypto.randomUUID();
     const result = await pool.query(
-      `INSERT INTO reviews (id, stars, review_text, author_name, product_label)
-       VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-      [id, stars, review_text, author_name, product_label]
+      `INSERT INTO reviews (id, stars, review_text, author_name, product_label, author_location)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [id, stars, review_text, author_name, product_label, author_location || null]
     );
     res.status(201).json({ review: result.rows[0] });
   } catch (err) {

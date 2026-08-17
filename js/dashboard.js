@@ -641,8 +641,9 @@ async function loadReviewsData() {
 function renderReviews() {
   const html = `
     <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05)">
-      <div class="admin-filter-bar">
+      <div class="admin-filter-bar" style="justify-content:space-between">
         <span style="font-family:var(--sans);font-size:.72rem;color:var(--muted)">${reviewsCache.length} reviews</span>
+        <button class="btn btn-gold btn-sm" onclick="openReviewForm()">+ Add Review</button>
       </div>
       <table class="data-table">
         <thead><tr><th>Author</th><th>Stars</th><th>Review</th><th>Product</th><th>Actions</th></tr></thead>
@@ -654,7 +655,7 @@ function renderReviews() {
 function renderReviewRows(reviews) {
   if (!reviews.length) return `<tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--muted)">No reviews left.</td></tr>`;
   return reviews.map(r => `<tr>
-    <td><div style="font-size:.8rem;color:var(--navy)">${esc(r.author_name)}</div></td>
+    <td><div style="font-size:.8rem;color:var(--navy)">${esc(r.author_name)}</div>${r.author_location ? `<div style="font-size:.68rem;color:var(--muted)">${esc(r.author_location)}</div>` : ''}</td>
     <td style="font-size:.75rem;color:var(--gold)">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</td>
     <td style="font-size:.75rem;color:var(--muted);max-width:320px">${esc((r.review_text || '').slice(0, 110))}${(r.review_text || '').length > 110 ? '…' : ''}</td>
     <td style="font-size:.72rem;color:var(--muted)">${esc(r.product_label || '—')}</td>
@@ -675,6 +676,40 @@ function deleteReview(id) {
       renderReviews();
     } catch (err) { showToast(err.message || 'Failed to delete review', 'error'); }
   });
+}
+
+function openReviewForm() {
+  document.getElementById('rfError').style.display = 'none';
+  document.getElementById('rfStars').value = '5';
+  document.getElementById('rfName').value = '';
+  document.getElementById('rfLocation').value = '';
+  document.getElementById('rfProduct').value = '';
+  document.getElementById('rfText').value = '';
+  document.getElementById('reviewFormOverlay').classList.add('open');
+}
+function closeReviewForm() { document.getElementById('reviewFormOverlay').classList.remove('open'); }
+
+async function saveReviewForm() {
+  const errEl = document.getElementById('rfError'); errEl.style.display = 'none';
+  const stars = Number(document.getElementById('rfStars').value);
+  const author_name = document.getElementById('rfName').value.trim();
+  const author_location = document.getElementById('rfLocation').value.trim();
+  const product_label = document.getElementById('rfProduct').value.trim();
+  const review_text = document.getElementById('rfText').value.trim();
+
+  if (!author_name) { errEl.textContent = 'Name is required'; errEl.style.display = 'block'; return; }
+  if (!product_label) { errEl.textContent = 'Perfume is required'; errEl.style.display = 'block'; return; }
+  if (!review_text) { errEl.textContent = 'Review text is required'; errEl.style.display = 'block'; return; }
+
+  try {
+    await Reviews.submitReview({ stars, review_text, author_name, product_label, author_location });
+    showToast('Review added!', 'success');
+    closeReviewForm();
+    await loadReviewsData();
+    renderReviews();
+  } catch (err) {
+    errEl.textContent = err.message || 'Could not reach the server.'; errEl.style.display = 'block';
+  }
 }
 
 /* ── ADMIN PROFILE ── */

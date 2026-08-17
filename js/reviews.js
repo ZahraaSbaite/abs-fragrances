@@ -14,11 +14,11 @@ const Reviews = (() => {
     if (!res.ok) throw new Error(data.error || 'Failed to delete review');
     return data;
   }
-  async function submitReview({ stars, review_text, author_name, product_label }) {
+  async function submitReview({ stars, review_text, author_name, product_label, author_location }) {
     const res = await fetch(`${API_BASE}/reviews`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stars, review_text, author_name, product_label }),
+      body: JSON.stringify({ stars, review_text, author_name, product_label, author_location: author_location || '' }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to submit review');

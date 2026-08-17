@@ -26,6 +26,7 @@
      surroundings — unlike --navy's big sections, this one does need to
      lighten in dark mode or it disappears into the now-dark cards/page. */
   --accent:     var(--navy);
+  --strip-paper: #FAF5E9; /* warm ivory card stock for the review "test strip" cards */
   --serif:      'Playfair Display', Georgia, serif;
   --serif2:     'Cormorant Garamond', Georgia, serif;
   --sans:       'Jost', sans-serif;
@@ -44,6 +45,7 @@
     --bg-rgb: 16,24,29;
     --muted: #94a8b0;
     --accent: #8a713f;
+    --strip-paper: #26201a;
   }
 }
 html[data-theme="dark"] body.storefront {
@@ -54,6 +56,7 @@ html[data-theme="dark"] body.storefront {
   --bg-rgb: 16,24,29;
   --muted: #94a8b0;
   --accent: #8a713f;
+  --strip-paper: #26201a;
 }
 
 html { scroll-behavior: smooth; }

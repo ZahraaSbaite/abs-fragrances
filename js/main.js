@@ -43,15 +43,18 @@ function renderReviewsWindow() {
 
   grid.innerHTML = visible.map((r, i) => `
       <div class="review-card fade-up delay-${(i % 3) + 1}">
-        <div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
-        <p class="review-text">"${escapeHtml(r.review_text)}"</p>
-        <div class="review-author">
-          <div class="review-avatar">${escapeHtml((r.author_name || '?').charAt(0))}</div>
-          <div>
-            <div class="review-name">${escapeHtml(r.author_name)}</div>
+        <div class="review-card-inner">
+          <div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+          <p class="review-text">"${escapeHtml(r.review_text)}"</p>
+          <div class="review-author">
+            <div class="review-avatar">${escapeHtml((r.author_name || '?').charAt(0))}</div>
+            <div>
+              <div class="review-name">${escapeHtml(r.author_name)}</div>
+              ${r.author_location ? `<div class="review-location">${escapeHtml(r.author_location)}</div>` : ''}
+            </div>
           </div>
+          <div class="review-product">${escapeHtml(r.product_label || '')}</div>
         </div>
-        <div class="review-product">${escapeHtml(r.product_label || '')}</div>
       </div>`).join('');
   grid.querySelectorAll('.fade-up').forEach(el => { el.classList.add('visible'); window.fadeUpObserver?.observe(el); });
 
