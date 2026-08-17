@@ -232,7 +232,7 @@ body, .about-value, footer, .navbar, .card, section {
 .trust-divider { width: 1px; height: 20px; background: rgba(196,162,112,.25); }
 
 /* ─── FOOTER ─── */
-footer { background: #0d2230; padding: 4rem 4rem 2rem; }
+footer { background: var(--surface); padding: 4rem 4rem 2rem; }
 .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4rem; padding-bottom: 3rem; margin-bottom: 2.5rem; border-bottom: 1px solid rgba(196,162,112,.12); }
 .footer-brand-name { font-family: var(--serif); font-size: 1.7rem; font-weight: 700; color:var(--paper); margin-bottom: .8rem; }
 .footer-brand-name span { color: var(--gold); }
