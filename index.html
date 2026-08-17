@@ -331,15 +331,6 @@
     </div>
   </section>
 
-  <!-- BRANDS STRIP (filled from getBrands() in products.js) -->
-  <section id="brandStripSection"
-    style="background:var(--white);padding:3rem 4rem;border-top:1px solid rgba(196,162,112,.12)">
-    <div class="section-eyebrow fade-up" style="margin-bottom:.5rem"><span id="brandStripCount">0</span> Premium Brands
-    </div>
-    <div id="brandStrip"
-      style="display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap;margin-top:1.5rem"></div>
-  </section>
-
   <!-- CATEGORIES -->
   <section class="collections" id="categories">
     <div class="section-eyebrow fade-up">Shop by Category</div>
@@ -534,25 +525,6 @@
   <script src="js/orders.js"></script>
   <script src="js/reviews.js"></script>
   <script src="js/main.js"></script>
-  <script>
-    (function () {
-      var strip = document.getElementById('brandStrip');
-      var countEl = document.getElementById('brandStripCount');
-      if (!strip || typeof getBrands !== 'function') return;
-      var brands = Object.values(getBrands()).filter(function (b) { return b && b.id !== 'other'; });
-      if (countEl) countEl.textContent = brands.length;
-      brands.forEach(function (b) {
-        var a = document.createElement('a');
-        a.href = 'categories.html?brand=' + encodeURIComponent(b.id);
-        a.className = 'fade-up';
-        a.style.cssText = 'text-align:center;text-decoration:none;opacity:.6;transition:opacity .2s';
-        a.onmouseover = function () { this.style.opacity = 1; };
-        a.onmouseout = function () { this.style.opacity = .6; };
-        a.innerHTML = '<div style="font-family:var(--sans);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--navy);margin-top:.3rem">' + (b.name || b.id) + '</div>';
-        strip.appendChild(a);
-      });
-    })();
-  </script>
 </body>
 
 </html>
