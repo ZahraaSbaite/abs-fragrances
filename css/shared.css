@@ -81,6 +81,7 @@ body {
 
 .nav-logo { font-family: var(--serif); font-size: 1.5rem; font-weight: 700; color: var(--navy); text-decoration: none; letter-spacing: .04em; flex-shrink: 0; }
 .nav-logo span { color: var(--gold); }
+.nav-logo span:first-child { font-weight: 800; }
 
 .nav-links { display: flex; gap: 2rem; list-style: none; margin: 0 auto; }
 .nav-links a { font-family: var(--sans); font-size: .76rem; font-weight: 400; letter-spacing: .18em; text-transform: uppercase; text-decoration: none; color: var(--navy); opacity: .65; transition: opacity .2s, color .2s; }
