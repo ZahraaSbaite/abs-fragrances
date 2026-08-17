@@ -5,7 +5,7 @@
 
 /* ─── PAGE HERO (sub-pages) ─── */
 .page-hero {
-  background: var(--navy); padding: 9rem 4rem 4rem;
+  background: var(--surface-dark); padding: 9rem 4rem 4rem;
   position: relative; overflow: hidden; text-align: center;
 }
 .page-hero::before {
@@ -126,58 +126,7 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
 .about-body { font-family:var(--sans); font-size:.92rem; line-height:1.9; color:var(--muted); }
 .about-body p { margin-bottom:1.5rem; }
 .about-body strong { color:var(--ink); font-weight:500; }
-.about-values { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin:3rem 0; }
-
-.about-value {
-  position:relative;
-  overflow:hidden;
-  padding:3rem 1.75rem 3.5rem;
-  text-align:center;
-  background:linear-gradient(180deg, rgba(196,162,112,.06), rgba(196,162,112,0) 40%), var(--navy);
-  border:1px solid rgba(196,162,112,.18);
-  border-radius:18px;
-  box-shadow:var(--shadow-md);
-  transition:transform .3s var(--ease), border-color .3s var(--ease);
-}
-.about-value:hover { transform:translateY(-4px); border-color:rgba(196,162,112,.35); }
-
-.about-value-icon-wrap { position:relative; width:96px; height:96px; margin:0 auto 1.6rem; display:flex; align-items:center; justify-content:center; }
-.about-value-icon-ring { position:absolute; inset:0; border:1px dashed rgba(196,162,112,.55); border-radius:50%; }
-.about-value-icon-bg {
-  width:70px; height:70px; border-radius:50%;
-  background:rgba(196,162,112,.12);
-  display:flex; align-items:center; justify-content:center;
-}
-.about-value-icon-bg svg { width:30px; height:30px; color:var(--gold); }
-.about-value-icon-wrap::before,
-.about-value-icon-wrap::after {
-  content:'✦'; position:absolute; left:50%; transform:translateX(-50%);
-  color:var(--gold-light); font-size:.65rem; opacity:.8;
-}
-.about-value-icon-wrap::before { top:-8px; }
-.about-value-icon-wrap::after  { bottom:-8px; }
-
-.about-value-title {
-  font-family:var(--serif); font-size:1.15rem; font-weight:700;
-  color:var(--bg); margin-bottom:.7rem;
-}
-
-.about-value-divider { display:flex; align-items:center; justify-content:center; gap:.5rem; margin-bottom:1.1rem; }
-.about-value-divider span { width:28px; height:1px; background:rgba(196,162,112,.5); }
-.about-value-divider em { font-style:normal; color:var(--gold); font-size:.7rem; }
-
-.about-value-desc {
-  font-family:var(--sans); font-size:.82rem; line-height:1.7;
-  color:rgba(248,248,249,.62);
-}
-
-.about-value-arc {
-  position:absolute; left:50%; bottom:0; width:100%; height:44px;
-  transform:translateX(-50%);
-  overflow:visible;
-}
-.about-value-arc path { fill:none; stroke:var(--gold); stroke-width:1; opacity:.35; }
-.about-value-arc .arc-dot { fill:var(--gold); opacity:.7; }.about-values {
+.about-values {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
@@ -189,7 +138,7 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
   overflow: hidden;
   padding: 3rem 1.75rem 3.5rem;
   text-align: center;
-  background: linear-gradient(180deg, rgba(196, 162, 112, .06), rgba(196, 162, 112, 0) 40%), var(--navy);
+  background: linear-gradient(180deg, rgba(196, 162, 112, .06), rgba(196, 162, 112, 0) 40%), var(--surface-dark);
   border: 1px solid rgba(196, 162, 112, .18);
   border-radius: 18px;
   box-shadow: var(--shadow-md);
@@ -257,7 +206,7 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
   font-family: var(--serif);
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--bg);
+  color: var(--paper);
   margin-bottom: .7rem;
 }
 
@@ -318,7 +267,7 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
 .contact-item-icon{ width:40px; height:40px; background:rgba(196,162,112,.1); display:flex; align-items:center; justify-content:center; color:var(--gold); flex-shrink:0; font-size:1.1rem; }
 .contact-item-label{ font-family:var(--sans); font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:.2rem; }
 .contact-item-val  { font-family:var(--sans); font-size:.88rem; color:var(--ink); }
-.contact-form    { background:var(--navy); padding:2.75rem; box-shadow:var(--shadow-md); border-top:3px solid var(--gold); position:relative; overflow:hidden; }
+.contact-form    { background:var(--surface-dark); padding:2.75rem; box-shadow:var(--shadow-md); border-top:3px solid var(--gold); position:relative; overflow:hidden; }
 .contact-form::before {
   content:''; position:absolute; inset:0; pointer-events:none;
   background: radial-gradient(ellipse 80% 60% at 100% 0%, rgba(196,162,112,.1) 0%, transparent 60%);

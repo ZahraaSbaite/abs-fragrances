@@ -16,7 +16,15 @@
   --ink:        var(--navy);
   --ink-rgb:    22,56,70;
   --bg-rgb:     248,248,249;
-  --paper:      var(--bg);
+  /* --paper: light text color for sections that are deliberately dark
+     in BOTH themes (hero, footer, page banners, collections). Fixed on
+     purpose, not derived from --bg — see --surface-dark below. */
+  --paper:      #F8F8F9;
+  /* --surface-dark: background for those same permanently-dark
+     sections. Fixed on purpose so they don't invert to a light card
+     when dark mode flips --navy — they're a brand statement, not a
+     surface that should adapt. */
+  --surface-dark: #163846;
   --accent:     var(--navy);
   --strip-paper: #FAF5E9; /* warm ivory card stock for the review "test strip" cards */
   --serif:      'Playfair Display', Georgia, serif;
@@ -28,6 +36,24 @@
   --shadow-lg:  0 20px 60px rgba(22,56,70,0.14);
 }
 
+[data-theme="dark"] {
+  --bg:         #1C1B18;
+  --navy:       #F3EFE8;
+  --gold:       #D8B888;
+  --gold-light: #E4C79C;
+  --white:      #26241F;
+  --muted:      #A8A296;
+  --ink-rgb:    243,239,232;
+  --bg-rgb:     28,27,24;
+  /* --strip-paper stays paper-toned but tuned dark, so review-card text
+     (which uses --ink and correctly flips light) keeps contrast against
+     it instead of going light-on-light. */
+  --strip-paper: #26201a;
+  --shadow-sm:  0 2px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(216,184,136,0.12);
+  --shadow-md:  0 10px 40px rgba(0,0,0,0.4);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.5);
+}
+
 html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
@@ -36,6 +62,10 @@ body {
   font-weight: 300;
   line-height: 1.6;
   overflow-x: hidden;
+}
+
+body, .about-value, footer, .navbar, .card, section {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
 /* ─── TYPOGRAPHY ─── */
@@ -58,7 +88,7 @@ body {
 
 /* ─── BUTTONS ─── */
 .btn { display: inline-flex; align-items: center; gap: .6rem; cursor: pointer; border: none; font-family: var(--sans); font-size: .75rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; text-decoration: none; padding: .9rem 2rem; transition: all .3s var(--ease); }
-.btn-navy  { background: var(--accent); color:var(--paper); }
+.btn-navy  { background: var(--accent); color:var(--white); }
 .btn-navy:hover { background: var(--gold); color: var(--white); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--ink-rgb),.25); }
 .btn-gold  { background: var(--gold); color: var(--white); }
 .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(196,162,112,.35); }
@@ -117,8 +147,16 @@ body {
 }
 .nav-cart:hover .cart-badge { background: var(--gold); transform: scale(1.15); }
 
-.nav-cta-btn { font-family: var(--sans); font-size: .73rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; background: var(--accent); color:var(--paper); border: none; padding: .65rem 1.4rem; cursor: pointer; transition: all .25s; text-decoration: none; white-space: nowrap; }
+.nav-cta-btn { font-family: var(--sans); font-size: .73rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; background: var(--accent); color:var(--white); border: none; padding: .65rem 1.4rem; cursor: pointer; transition: all .25s; text-decoration: none; white-space: nowrap; }
 .nav-cta-btn:hover { background: var(--gold); color: var(--white); }
+
+/* Theme toggle */
+.theme-toggle {
+  background: none; border: none; cursor: pointer; font-size: 1.1rem;
+  line-height: 1; padding: .4rem; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; transition: transform .2s;
+}
+.theme-toggle:hover { transform: scale(1.12); }
 
 /* Hamburger */
 .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; margin-left: auto; }
@@ -163,7 +201,7 @@ body {
 .mobile-nav-admin-err.show { display: block; }
 .mobile-nav-admin-btn {
   font-family: var(--sans); font-size: .72rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
-  background: var(--accent); color:var(--paper); border: none; padding: .65rem 1rem; cursor: pointer; transition: background .2s;
+  background: var(--accent); color:var(--white); border: none; padding: .65rem 1rem; cursor: pointer; transition: background .2s;
 }
 .mobile-nav-admin-btn:hover { background: var(--gold); }
 .mobile-nav-admin-btn:disabled { opacity: .6; cursor: default; }
@@ -178,7 +216,7 @@ body {
 .mobile-nav-bg.open { opacity: 1; pointer-events: all; }
 
 /* ─── TRUST BAR ─── */
-.trust-bar { background: var(--navy); padding: 1rem 4rem; display: flex; align-items: center; justify-content: center; gap: 3rem; flex-wrap: wrap; }
+.trust-bar { background: var(--surface-dark); padding: 1rem 4rem; display: flex; align-items: center; justify-content: center; gap: 3rem; flex-wrap: wrap; }
 .trust-item { display: flex; align-items: center; gap: .7rem; font-family: var(--sans); font-size: .68rem; font-weight: 400; letter-spacing: .18em; text-transform: uppercase; color: rgba(248,248,249,.6); white-space: nowrap; }
 .trust-divider { width: 1px; height: 20px; background: rgba(196,162,112,.25); }
 

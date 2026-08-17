@@ -7,7 +7,7 @@
 
 /* ─── SIDEBAR ─── */
 .sidebar {
-  background: var(--navy);
+  background: var(--surface-dark);
   display: flex; flex-direction: column;
   position: sticky; top: 0; height: 100vh; overflow-y: auto;
   flex-shrink: 0;
@@ -45,7 +45,7 @@
 .sidebar-logout-btn:hover { color: rgba(248,248,249,.7); }
 
 /* ─── MAIN CONTENT ─── */
-.dash-main { background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+.dash-main { background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; }
 
 .dash-topbar { background: var(--white); padding: 1.2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(var(--ink-rgb),.06); flex-shrink: 0; }
 .dash-topbar-title { font-family: var(--serif); font-size: 1.3rem; font-weight: 400; color:var(--ink); }
@@ -132,7 +132,7 @@
 .filter-select:focus { border-color: var(--gold); }
 
 /* ─── MOBILE SIDEBAR ─── */
-.sidebar-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 300; background: var(--navy); color:var(--paper); border: none; width: 40px; height: 40px; cursor: pointer; align-items: center; justify-content: center; }
+.sidebar-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 300; background: var(--surface-dark); color:var(--paper); border: none; width: 40px; height: 40px; cursor: pointer; align-items: center; justify-content: center; }
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 198; }
 
 /* ─── RESPONSIVE ─── */
