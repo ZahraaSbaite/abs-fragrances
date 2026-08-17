@@ -63,7 +63,7 @@ function renderCheckoutForm() {
     <form id="checkoutForm" class="checkout-form">
       <label>Full name<input type="text" name="customer_name" required></label>
       <label>Phone number<input type="tel" name="customer_phone" required></label>
-      <label>Email address (optional)<input type="email" name="customer_email"></label>
+      <label>Email address<input type="email" name="customer_email" required></label>
       <label>Delivery address<textarea name="customer_address" required></textarea></label>
       <div class="checkout-location">
         <button type="button" class="checkout-location-btn" id="shareLocationBtn" onclick="shareLocation()">📍 Share My Location (optional)</button>
@@ -73,6 +73,7 @@ function renderCheckoutForm() {
       <label>Payment method
         <select name="payment_method" class="checkout-select">
           <option value="Cash on Delivery">Cash on Delivery</option>
+          <option value="Wish Money">Wish Money</option>
         </select>
       </label>
       <label>Note (optional)<textarea name="note"></textarea></label>

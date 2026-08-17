@@ -8,15 +8,15 @@ const router = express.Router();
 const DELIVERY_CENTS = 500;
 
 // POST /api/orders — guest checkout, no login required.
-// body: { customer_name, customer_phone, customer_address, customer_email?, location_url?, payment_method?, note?, items: [{ product_id, quantity }] }
+// body: { customer_name, customer_phone, customer_email, customer_address, location_url?, payment_method?, note?, items: [{ product_id, quantity }] }
 // Prices are looked up server-side from the products table — never trust client-sent prices.
 router.post('/', async (req, res) => {
   const {
     customer_name, customer_phone, customer_address, customer_email,
     location_url, payment_method, note, items: cartItems,
   } = req.body;
-  if (!customer_name || !customer_phone || !customer_address) {
-    return res.status(400).json({ error: 'customer_name, customer_phone, and customer_address are required' });
+  if (!customer_name || !customer_phone || !customer_email || !customer_address) {
+    return res.status(400).json({ error: 'customer_name, customer_phone, customer_email, and customer_address are required' });
   }
   if (!Array.isArray(cartItems) || !cartItems.length) {
     return res.status(400).json({ error: 'items must be a non-empty array of { product_id, quantity }' });
