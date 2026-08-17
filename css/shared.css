@@ -13,18 +13,10 @@
   --muted:      #7a8f99;
   --danger:     #c0392b;
   --success:    #27ae60;
-  /* --ink: text on light surfaces (--bg/--white). --ink-rgb backs the
-     rgba() border/overlay tints used throughout. --paper: text on the
-     sections that are deliberately dark in both themes (hero, footer,
-     collections, DM CTA) — stays constant, unlike --bg which flips. */
   --ink:        var(--navy);
   --ink-rgb:    22,56,70;
   --bg-rgb:     248,248,249;
   --paper:      var(--bg);
-  /* --accent: small solid-navy UI chrome (buttons, badges, active tabs,
-     hamburger lines) that needs to stay visually distinct from its
-     surroundings — unlike --navy's big sections, this one does need to
-     lighten in dark mode or it disappears into the now-dark cards/page. */
   --accent:     var(--navy);
   --strip-paper: #FAF5E9; /* warm ivory card stock for the review "test strip" cards */
   --serif:      'Playfair Display', Georgia, serif;
@@ -34,29 +26,6 @@
   --shadow-sm:  0 2px 20px rgba(22,56,70,0.06), 0 0 0 1px rgba(196,162,112,0.08);
   --shadow-md:  0 10px 40px rgba(22,56,70,0.1);
   --shadow-lg:  0 20px 60px rgba(22,56,70,0.14);
-}
-
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme="light"]) body.storefront {
-    --bg: #10181d;
-    --white: #1a262c;
-    --ink: #EDEAE4;
-    --ink-rgb: 237,234,228;
-    --bg-rgb: 16,24,29;
-    --muted: #94a8b0;
-    --accent: #8a713f;
-    --strip-paper: #26201a;
-  }
-}
-html[data-theme="dark"] body.storefront {
-  --bg: #10181d;
-  --white: #1a262c;
-  --ink: #EDEAE4;
-  --ink-rgb: 237,234,228;
-  --bg-rgb: 16,24,29;
-  --muted: #94a8b0;
-  --accent: #8a713f;
-  --strip-paper: #26201a;
 }
 
 html { scroll-behavior: smooth; }
@@ -134,19 +103,6 @@ body {
 .nav-account-name { font-family: var(--sans); font-size: .78rem; font-weight: 500; color:var(--ink); display: block; }
 .nav-account-sub  { font-family: var(--sans); font-size: .65rem; font-weight: 300; color: var(--muted); display: block; cursor: pointer; }
 .nav-account-sub:hover { color: var(--danger); }
-
-.theme-toggle {
-  background: none; border: none; cursor: pointer; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px; color:var(--ink); transition: color .2s;
-  position: relative; flex-shrink: 0;
-}
-.theme-toggle:hover { color: var(--gold); }
-.theme-toggle svg { position: absolute; top: 0; left: 0; transition: opacity .25s, transform .35s var(--ease); }
-.theme-toggle .icon-sun { opacity: 1; transform: scale(1) rotate(0deg); }
-.theme-toggle .icon-moon { opacity: 0; transform: scale(.5) rotate(-40deg); }
-.theme-toggle.is-dark .icon-sun { opacity: 0; transform: scale(.5) rotate(40deg); }
-.theme-toggle.is-dark .icon-moon { opacity: 1; transform: scale(1) rotate(0deg); }
 
 .nav-cart { position: relative; cursor: pointer; color:var(--ink); transition: color .2s; text-decoration: none; display: flex; align-items: center; }
 .nav-cart:hover { color: var(--gold); }
