@@ -6,6 +6,7 @@ const authRoutes = require('./src/routes/auth.routes');
 const productsRoutes = require('./src/routes/products.routes');
 const ordersRoutes = require('./src/routes/orders.routes');
 const reviewsRoutes = require('./src/routes/reviews.routes');
+const categoriesRoutes = require('./src/routes/categories.routes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/reviews', reviewsRoutes);
+app.use('/api/categories', categoriesRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {

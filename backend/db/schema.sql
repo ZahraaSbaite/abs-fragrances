@@ -106,3 +106,17 @@ CREATE TABLE IF NOT EXISTS reviews (
   product_label    TEXT,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ─────────────────────────────────────────────
+-- CATEGORIES
+-- Admin-managed, independent of the fixed products.gender field
+-- (Men/Women/Unisex/Musk) — this is a separate curated list, e.g. for
+-- a marketing/collections showcase, that admin can freely add to.
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS categories (
+  id           TEXT PRIMARY KEY,        -- e.g. 'signature-line'
+  name         TEXT NOT NULL,           -- e.g. 'Signature Line'
+  icon         TEXT,                    -- emoji, e.g. '✨'
+  description  TEXT,                    -- short blurb shown under the name
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
