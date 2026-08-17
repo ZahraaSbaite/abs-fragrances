@@ -431,22 +431,35 @@
 
     <div class="review-form-wrap fade-up">
       <div class="review-form-card">
+        <div class="review-form-eyebrow">Leave a Review</div>
         <h3 class="review-form-title">Share Your Experience</h3>
         <p class="review-form-sub">Tried one of our fragrances? Let others know what you think.</p>
         <form id="reviewForm">
-          <div class="star-picker" id="starPicker" role="radiogroup" aria-label="Rating">
-            <button type="button" class="star-btn" data-star="1" aria-label="1 star">★</button>
-            <button type="button" class="star-btn" data-star="2" aria-label="2 stars">★</button>
-            <button type="button" class="star-btn" data-star="3" aria-label="3 stars">★</button>
-            <button type="button" class="star-btn" data-star="4" aria-label="4 stars">★</button>
-            <button type="button" class="star-btn" data-star="5" aria-label="5 stars">★</button>
-            <input type="hidden" name="stars" id="starsInput" value="0">
+          <div class="star-picker-wrap">
+            <div class="star-picker-label">Your Rating</div>
+            <div class="star-picker" id="starPicker" role="radiogroup" aria-label="Rating">
+              <button type="button" class="star-btn" data-star="1" aria-label="1 star">★</button>
+              <button type="button" class="star-btn" data-star="2" aria-label="2 stars">★</button>
+              <button type="button" class="star-btn" data-star="3" aria-label="3 stars">★</button>
+              <button type="button" class="star-btn" data-star="4" aria-label="4 stars">★</button>
+              <button type="button" class="star-btn" data-star="5" aria-label="5 stars">★</button>
+              <input type="hidden" name="stars" id="starsInput" value="0">
+            </div>
           </div>
           <div class="review-form-row">
-            <input type="text" name="author_name" placeholder="Your name" maxlength="80" required>
-            <input type="text" name="author_location" placeholder="City (optional)" maxlength="80">
+            <div class="review-form-field">
+              <label class="review-form-label">Your Name</label>
+              <input type="text" name="author_name" placeholder="e.g. Rami K." maxlength="80" required>
+            </div>
+            <div class="review-form-field">
+              <label class="review-form-label">City (Optional)</label>
+              <input type="text" name="author_location" placeholder="e.g. Beirut" maxlength="80">
+            </div>
           </div>
-          <textarea name="review_text" placeholder="Tell us about your experience…" maxlength="1000" required></textarea>
+          <div class="review-form-field">
+            <label class="review-form-label">Your Review</label>
+            <textarea name="review_text" placeholder="Tell us about your experience…" maxlength="1000" required></textarea>
+          </div>
           <div id="reviewFormError" class="review-form-error" style="display:none"></div>
           <button type="submit" class="btn btn-gold" id="reviewSubmitBtn" style="justify-content:center">Submit Review</button>
         </form>

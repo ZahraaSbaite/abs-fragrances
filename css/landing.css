@@ -664,32 +664,47 @@
 
 /* ─── LEAVE A REVIEW ─── */
 .review-form-wrap { display: flex; justify-content: center; margin: 4rem auto 0; max-width: 1200px; }
-.review-form-card { background: var(--white); box-shadow: var(--shadow-sm); padding: 2.5rem; max-width: 520px; width: 100%; text-align: center; }
-.review-form-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 500; color: var(--navy); margin-bottom: .5rem; }
-.review-form-sub { font-family: var(--sans); font-size: .82rem; color: var(--muted); margin-bottom: 1.6rem; }
-#reviewForm { display: flex; flex-direction: column; gap: 1.1rem; }
+.review-form-card {
+  background: var(--white); box-shadow: var(--shadow-md);
+  padding: 3rem 2.75rem; max-width: 540px; width: 100%; text-align: center;
+  position: relative; overflow: hidden; border-top: 3px solid var(--gold);
+}
+.review-form-card::before {
+  content: '\201C'; position: absolute; top: -1.2rem; right: 1.4rem;
+  font-family: var(--serif); font-size: 7rem; line-height: 1;
+  color: rgba(196,162,112,.07); pointer-events: none;
+}
+.review-form-eyebrow {
+  font-family: var(--sans); font-size: .65rem; font-weight: 400;
+  letter-spacing: .32em; text-transform: uppercase; color: var(--gold);
+  margin-bottom: .9rem; position: relative;
+}
+.review-form-title { font-family: var(--serif); font-size: 1.55rem; font-weight: 500; color: var(--navy); margin-bottom: .5rem; position: relative; }
+.review-form-sub { font-family: var(--serif2); font-style: italic; font-size: .95rem; color: var(--muted); margin-bottom: 2.2rem; position: relative; }
+#reviewForm { display: flex; flex-direction: column; gap: 1.4rem; position: relative; }
 
-.star-picker { display: flex; justify-content: center; gap: .3rem; }
+.star-picker-wrap { display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+.star-picker-label { font-family: var(--sans); font-size: .62rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.star-picker { display: flex; justify-content: center; gap: .4rem; }
 .star-btn {
   background: none; border: none; cursor: pointer; padding: 0;
-  font-size: 1.8rem; line-height: 1; color: rgba(22,56,70,.15);
+  font-size: 2.1rem; line-height: 1; color: rgba(22,56,70,.13);
   transition: color .15s, transform .15s;
 }
-.star-btn:hover { transform: scale(1.12); }
-.star-btn.active { color: var(--gold); }
+.star-btn:hover { transform: scale(1.15); }
+.star-btn.active { color: var(--gold); text-shadow: 0 0 16px rgba(196,162,112,.35); }
 
-.review-form-row { display: flex; gap: .8rem; }
-.review-form-row input {
-  flex: 1; min-width: 0;
-}
+.review-form-row { display: flex; gap: 1rem; }
+.review-form-field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .55rem; text-align: left; }
+.review-form-label { font-family: var(--sans); font-size: .62rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
 #reviewForm input, #reviewForm textarea {
   font-family: var(--sans); font-size: .85rem; color: var(--navy);
-  padding: .75rem 1rem; border: 1px solid rgba(22,56,70,.18);
-  background: var(--white); outline: none; width: 100%; box-sizing: border-box;
-  transition: border-color .2s, box-shadow .2s;
+  padding: .8rem 1rem; border: 1px solid rgba(22,56,70,.16);
+  background: var(--bg); outline: none; width: 100%; box-sizing: border-box;
+  transition: border-color .2s, box-shadow .2s, background .2s;
 }
-#reviewForm textarea { min-height: 90px; resize: vertical; text-align: left; }
-#reviewForm input:focus, #reviewForm textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(196,162,112,.12); }
+#reviewForm textarea { min-height: 100px; resize: vertical; text-align: left; }
+#reviewForm input:focus, #reviewForm textarea:focus { border-color: var(--gold); background: var(--white); box-shadow: 0 0 0 3px rgba(196,162,112,.12); }
 .review-form-error { font-family: var(--sans); font-size: .78rem; color: var(--danger); }
 
 /* ─── RESPONSIVE ─── */
@@ -700,6 +715,6 @@
 @media(max-width:640px) {
   .reviews-section { padding: 4rem 1.5rem; }
   .reviews-grid { grid-template-columns: 1fr; }
-  .review-form-card { padding: 2rem 1.5rem; }
+  .review-form-card { padding: 2.5rem 1.75rem; }
   .review-form-row { flex-direction: column; }
 }
