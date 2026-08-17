@@ -393,7 +393,7 @@ function renderBrandRows(brands) {
   return brands.map(b => {
     const count = Object.values(PRODUCTS).filter(p => p.brand === b.id).length;
     return `<tr>
-      <td style="font-size:1.4rem">${b.logo || '🧴'}</td>
+      <td>${b.logo_url ? `<img src="${esc(b.logo_url)}" alt="" style="width:32px;height:32px;object-fit:contain;border-radius:4px" />` : `<span style="font-size:1.4rem">${b.logo || '🧴'}</span>`}</td>
       <td style="font-weight:400;font-size:.85rem;color:var(--navy)">${esc(b.name)}</td>
       <td style="font-size:.75rem;color:var(--muted)">${esc(b.id)}</td>
       <td style="font-size:.78rem">${count}</td>
@@ -409,9 +409,28 @@ function renderBrandRows(brands) {
   }).join('');
 }
 
+function previewBrandLogoUrl() {
+  const url = document.getElementById('bfLogoUrl').value.trim();
+  const img = document.getElementById('brandLogoPreviewImg');
+  const ph = document.getElementById('brandLogoPlaceholder');
+  if (url) { img.src = url; img.style.display = 'block'; ph.style.display = 'none'; img.onerror = () => { img.style.display = 'none'; ph.style.display = 'flex'; }; }
+  else { img.style.display = 'none'; ph.style.display = 'flex'; }
+}
+function handleBrandLogoUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const d = e.target.result; document.getElementById('bfLogoUrl').value = d;
+    const img = document.getElementById('brandLogoPreviewImg');
+    img.src = d; img.style.display = 'block'; document.getElementById('brandLogoPlaceholder').style.display = 'none';
+  }; reader.readAsDataURL(input.files[0]);
+}
+
 function openBrandForm(existingId) {
   document.getElementById('bfError').style.display = 'none';
   const idInput = document.getElementById('bfIdInput');
+  document.getElementById('brandLogoPreviewImg').style.display = 'none';
+  document.getElementById('brandLogoPlaceholder').style.display = 'flex';
   if (existingId) {
     const b = BRANDS[existingId];
     document.getElementById('brandFormTitle').textContent = 'Edit Brand';
@@ -419,12 +438,18 @@ function openBrandForm(existingId) {
     idInput.value = existingId; idInput.disabled = true;
     document.getElementById('bfName').value = b?.name || '';
     document.getElementById('bfLogo').value = b?.logo || '';
+    document.getElementById('bfLogoUrl').value = b?.logo_url || '';
+    if (b?.logo_url) {
+      const img = document.getElementById('brandLogoPreviewImg');
+      img.src = b.logo_url; img.style.display = 'block'; document.getElementById('brandLogoPlaceholder').style.display = 'none';
+    }
   } else {
     document.getElementById('brandFormTitle').textContent = 'Add New Brand';
     document.getElementById('bfId').value = '';
     idInput.value = ''; idInput.disabled = false;
     document.getElementById('bfName').value = '';
     document.getElementById('bfLogo').value = '';
+    document.getElementById('bfLogoUrl').value = '';
   }
   document.getElementById('brandFormOverlay').classList.add('open');
 }
@@ -436,6 +461,7 @@ async function saveBrandForm() {
   const idVal = document.getElementById('bfIdInput').value.trim();
   const name = document.getElementById('bfName').value.trim();
   const logo = document.getElementById('bfLogo').value.trim();
+  const logo_url = document.getElementById('bfLogoUrl').value.trim();
 
   if (!name) { errEl.textContent = 'Brand name is required'; errEl.style.display = 'block'; return; }
   if (!existingId && !idVal) { errEl.textContent = 'Brand ID is required'; errEl.style.display = 'block'; return; }
@@ -446,13 +472,13 @@ async function saveBrandForm() {
       res = await fetch(`${API_BASE}/products/brands/${existingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ name, logo }),
+        body: JSON.stringify({ name, logo, logo_url: logo_url || null }),
       });
     } else {
       res = await fetch(`${API_BASE}/products/brands`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ id: idVal, name, logo }),
+        body: JSON.stringify({ id: idVal, name, logo, logo_url: logo_url || null }),
       });
     }
     const data = await res.json();
@@ -628,7 +654,7 @@ function renderReviews() {
 function renderReviewRows(reviews) {
   if (!reviews.length) return `<tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--muted)">No reviews left.</td></tr>`;
   return reviews.map(r => `<tr>
-    <td><div style="font-size:.8rem;color:var(--navy)">${esc(r.author_name)}</div><div style="font-size:.68rem;color:var(--muted)">${esc(r.author_location || '')}</div></td>
+    <td><div style="font-size:.8rem;color:var(--navy)">${esc(r.author_name)}</div></td>
     <td style="font-size:.75rem;color:var(--gold)">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</td>
     <td style="font-size:.75rem;color:var(--muted);max-width:320px">${esc((r.review_text || '').slice(0, 110))}${(r.review_text || '').length > 110 ? '…' : ''}</td>
     <td style="font-size:.72rem;color:var(--muted)">${esc(r.product_label || '—')}</td>

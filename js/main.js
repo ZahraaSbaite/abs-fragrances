@@ -29,12 +29,19 @@ function getBrandName(brandId) {
 /* Shown reviews are either curated seed data or submitted live by visitors
  * via the form below the grid (published immediately, no moderation queue).
  * Admin can delete any of them from the dashboard's Customer Reviews view. */
-async function renderReviewsSection() {
+let _reviewsList = [];
+let _reviewsStart = 0;
+const REVIEWS_VISIBLE = 3;
+
+function renderReviewsWindow() {
   const grid = document.getElementById('reviewsGrid');
-  if (!grid || typeof Reviews === 'undefined') return;
-  try {
-    const reviews = await Reviews.fetchAll();
-    grid.innerHTML = reviews.map((r, i) => `
+  if (!grid) return;
+  const total = _reviewsList.length;
+  const visible = total <= REVIEWS_VISIBLE
+    ? _reviewsList
+    : Array.from({ length: REVIEWS_VISIBLE }, (_, i) => _reviewsList[(_reviewsStart + i) % total]);
+
+  grid.innerHTML = visible.map((r, i) => `
       <div class="review-card fade-up delay-${(i % 3) + 1}">
         <div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
         <p class="review-text">"${escapeHtml(r.review_text)}"</p>
@@ -42,15 +49,42 @@ async function renderReviewsSection() {
           <div class="review-avatar">${escapeHtml((r.author_name || '?').charAt(0))}</div>
           <div>
             <div class="review-name">${escapeHtml(r.author_name)}</div>
-            <div class="review-location">${escapeHtml(r.author_location || '')}</div>
           </div>
         </div>
-        ${r.product_label ? `<div class="review-product">${escapeHtml(r.product_label)}</div>` : ''}
+        <div class="review-product">${escapeHtml(r.product_label || '')}</div>
       </div>`).join('');
-    grid.querySelectorAll('.fade-up').forEach(el => window.fadeUpObserver?.observe(el));
+  grid.querySelectorAll('.fade-up').forEach(el => { el.classList.add('visible'); window.fadeUpObserver?.observe(el); });
+
+  const arrows = total > REVIEWS_VISIBLE;
+  document.getElementById('reviewPrevBtn')?.classList.toggle('is-hidden', !arrows);
+  document.getElementById('reviewNextBtn')?.classList.toggle('is-hidden', !arrows);
+}
+
+async function renderReviewsSection() {
+  const grid = document.getElementById('reviewsGrid');
+  if (!grid || typeof Reviews === 'undefined') return;
+  try {
+    _reviewsList = await Reviews.fetchAll();
+    _reviewsStart = 0;
+    renderReviewsWindow();
   } catch (err) {
     console.error('Failed to load reviews:', err);
   }
+}
+
+function initReviewsCarousel() {
+  document.getElementById('reviewPrevBtn')?.addEventListener('click', () => {
+    const total = _reviewsList.length;
+    if (!total) return;
+    _reviewsStart = (_reviewsStart - 1 + total) % total;
+    renderReviewsWindow();
+  });
+  document.getElementById('reviewNextBtn')?.addEventListener('click', () => {
+    const total = _reviewsList.length;
+    if (!total) return;
+    _reviewsStart = (_reviewsStart + 1) % total;
+    renderReviewsWindow();
+  });
 }
 
 /* ─── Homepage: "Leave a Review" form ─── */
@@ -76,14 +110,14 @@ function initReviewForm() {
 
     const stars = Number(starsInput.value);
     const author_name = form.author_name.value.trim();
-    const author_location = form.author_location.value.trim();
+    const product_label = form.product_label.value.trim();
     const review_text = form.review_text.value.trim();
     if (!stars) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
-    if (!author_name || !review_text) { errEl.textContent = 'Name and review are required.'; errEl.style.display = 'block'; return; }
+    if (!author_name || !product_label || !review_text) { errEl.textContent = 'Name, perfume, and review are required.'; errEl.style.display = 'block'; return; }
 
     btn.disabled = true; btn.textContent = 'Submitting…';
     try {
-      await Reviews.submitReview({ stars, review_text, author_name, author_location });
+      await Reviews.submitReview({ stars, review_text, author_name, product_label });
       form.reset();
       starsInput.value = '0'; paint(0);
       showToast('Thank you for your review! 🎉', 'success');
@@ -292,6 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderReviewsSection();
   initReviewForm();
+  initReviewsCarousel();
 
   // Product card buttons on landing
   document.querySelectorAll('.product-card').forEach(card => {

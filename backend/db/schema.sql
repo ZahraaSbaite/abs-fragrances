@@ -7,10 +7,14 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto; -- for gen_random_uuid()
 -- BRANDS
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS brands (
-  id    TEXT PRIMARY KEY,        -- e.g. 'rasasi'
-  name  TEXT NOT NULL,           -- e.g. 'Rasasi'
-  logo  TEXT                     -- emoji or icon, kept from the old frontend data
+  id        TEXT PRIMARY KEY,        -- e.g. 'rasasi'
+  name      TEXT NOT NULL,           -- e.g. 'Rasasi'
+  logo      TEXT,                    -- emoji or icon, kept from the old frontend data
+  logo_url  TEXT                     -- uploaded/linked logo image, shown instead of the emoji when present
 );
+
+-- Safe to re-run against a database where `brands` already exists without this column.
+ALTER TABLE brands ADD COLUMN IF NOT EXISTS logo_url TEXT;
 
 -- ─────────────────────────────────────────────
 -- USERS

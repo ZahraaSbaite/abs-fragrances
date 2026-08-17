@@ -233,6 +233,12 @@
       return Object.values(getAllProductsCatalog()).filter(p => p.brand === brandId && p.gender === gender).length;
     }
 
+    function brandLogoHTML(b, cls) {
+      return b.logo_url
+        ? `<img class="${cls}" src="${b.logo_url}" alt="${b.name}" />`
+        : `<div class="${cls}">${b.logo || ''}</div>`;
+    }
+
     function renderBrands() {
       const brands = getBrandsForGender(currentGender);
       const grid = document.getElementById('brandGrid');
@@ -242,7 +248,7 @@
       }
       grid.innerHTML = brands.map(b => `
     <div class="brand-card" data-brand="${b.id}" onclick="showBrandPerfumes('${b.id}')">
-      <div class="brand-logo">${b.logo}</div>
+      ${brandLogoHTML(b, 'brand-logo')}
       <div class="brand-name">${b.name}</div>
       <div class="brand-count">${countForBrandAndGender(b.id, currentGender)} perfumes</div>
     </div>`).join('');
@@ -257,7 +263,7 @@
       document.getElementById('perfumesSection').style.display = 'block';
 
       document.getElementById('brandHeader').innerHTML = `
-    <div class="brand-section-logo">${brand.logo}</div>
+    ${brandLogoHTML(brand, 'brand-section-logo')}
     <div>
       <div class="brand-section-name">${brand.name}</div>
       <div class="brand-section-count">${products.length} ${currentGender} fragrance${products.length !== 1 ? 's' : ''}</div>

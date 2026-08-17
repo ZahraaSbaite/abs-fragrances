@@ -491,7 +491,29 @@
           id="bfIdInput" placeholder="e.g. maisonOud" /></div>
       <div class="form-group"><label class="form-label">Brand Name *</label><input class="form-input" id="bfName"
           placeholder="e.g. Maison Oud" /></div>
-      <div class="form-group"><label class="form-label">Logo (emoji)</label><input class="form-input" id="bfLogo"
+      <div class="form-group">
+        <label class="form-label">Logo Image</label>
+        <div class="photo-preview-wrap" id="brandLogoPreviewWrap" style="height:100px">
+          <div class="photo-preview-placeholder" id="brandLogoPlaceholder">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <span>Enter URL below or upload a file</span>
+          </div>
+          <img id="brandLogoPreviewImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain" />
+        </div>
+        <div style="display:flex;gap:.6rem;align-items:center;margin-top:.6rem">
+          <input class="form-input" id="bfLogoUrl" placeholder="https://... logo image URL" style="flex:1"
+            oninput="previewBrandLogoUrl()" />
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;white-space:nowrap;flex-shrink:0">
+            📁 Upload<input type="file" accept="image/*" id="bfLogoFile" style="display:none"
+              onchange="handleBrandLogoUpload(this)" />
+          </label>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Logo (emoji fallback)</label><input class="form-input" id="bfLogo"
           placeholder="e.g. 🕌" maxlength="4" /></div>
       <div id="bfError"
         style="color:var(--danger);font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>

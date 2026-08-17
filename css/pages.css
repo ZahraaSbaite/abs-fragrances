@@ -109,12 +109,14 @@
 }
 .brand-card:hover, .brand-card.active { border-color:var(--gold); box-shadow:var(--shadow-md); transform:translateY(-3px); }
 .brand-logo  { font-size:2rem; margin-bottom:.6rem; }
+img.brand-logo { width:44px; height:44px; object-fit:contain; margin:0 auto .6rem; display:block; }
 .brand-name  { font-family:var(--serif); font-size:.95rem; font-weight:500; color:var(--ink); }
 .brand-count { font-family:var(--sans); font-size:.62rem; color:var(--muted); margin-top:.2rem; }
 
 .brand-products-section { margin-top:2rem; }
 .brand-section-header { display:flex; align-items:center; gap:1.5rem; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(196,162,112,.2); }
 .brand-section-logo { font-size:2.2rem; }
+img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
 .brand-section-name { font-family:var(--serif); font-size:1.6rem; color:var(--ink); }
 .brand-section-count{ font-family:var(--sans); font-size:.72rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); }
 

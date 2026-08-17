@@ -47,12 +47,12 @@ router.get('/brands', async (req, res) => {
 
 // POST /api/products/brands — admin only
 router.post('/brands', requireAuth, requireAdmin, async (req, res) => {
-  const { id, name, logo } = req.body;
+  const { id, name, logo, logo_url } = req.body;
   if (!id || !name) return res.status(400).json({ error: 'id and name are required' });
   try {
     const result = await pool.query(
-      'INSERT INTO brands (id, name, logo) VALUES ($1,$2,$3) RETURNING *',
-      [id, name, logo || null]
+      'INSERT INTO brands (id, name, logo, logo_url) VALUES ($1,$2,$3,$4) RETURNING *',
+      [id, name, logo || null, logo_url || null]
     );
     res.status(201).json({ brand: result.rows[0] });
   } catch (err) {
@@ -64,12 +64,15 @@ router.post('/brands', requireAuth, requireAdmin, async (req, res) => {
 
 // PUT /api/products/brands/:id — admin only
 router.put('/brands/:id', requireAuth, requireAdmin, async (req, res) => {
-  const { name, logo } = req.body;
-  if (name === undefined && logo === undefined) return res.status(400).json({ error: 'No fields to update' });
+  const { name, logo, logo_url } = req.body;
+  if (name === undefined && logo === undefined && logo_url === undefined) {
+    return res.status(400).json({ error: 'No fields to update' });
+  }
   const fields = [];
   const params = [];
   if (name !== undefined) { params.push(name); fields.push(`name = $${params.length}`); }
   if (logo !== undefined) { params.push(logo); fields.push(`logo = $${params.length}`); }
+  if (logo_url !== undefined) { params.push(logo_url); fields.push(`logo_url = $${params.length}`); }
   params.push(req.params.id);
   try {
     const result = await pool.query(

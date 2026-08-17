@@ -432,7 +432,15 @@
     <div class="section-eyebrow fade-up">What They Say</div>
     <h2 class="section-title fade-up delay-1">Customer <em>Stories</em></h2>
     <p class="section-sub fade-up delay-2">Real people. Real scents. Real impressions.</p>
-    <div class="reviews-grid" id="reviewsGrid"></div>
+    <div class="reviews-carousel fade-up">
+      <button type="button" class="review-arrow review-arrow-prev" id="reviewPrevBtn" aria-label="Previous reviews">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6" /></svg>
+      </button>
+      <div class="reviews-grid" id="reviewsGrid"></div>
+      <button type="button" class="review-arrow review-arrow-next" id="reviewNextBtn" aria-label="Next reviews">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6" /></svg>
+      </button>
+    </div>
 
     <div class="review-form-wrap fade-up">
       <div class="review-form-card">
@@ -457,8 +465,8 @@
               <input type="text" name="author_name" placeholder="e.g. Rami K." maxlength="80" required>
             </div>
             <div class="review-form-field">
-              <label class="review-form-label">City (Optional)</label>
-              <input type="text" name="author_location" placeholder="e.g. Beirut" maxlength="80">
+              <label class="review-form-label">Perfume You Got</label>
+              <input type="text" name="product_label" placeholder="e.g. Hawas Éclat" maxlength="80" required>
             </div>
           </div>
           <div class="review-form-field">
