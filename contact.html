@@ -102,6 +102,7 @@
     <h3>Send us a Message</h3>
     <div class="form-group"><label class="form-label">Your Name</label><input class="form-input" id="cName"/></div>
     <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" type="email" id="cEmail" /></div>
+    <div class="form-group"><label class="form-label">Phone Number (Optional)</label><input class="form-input" type="tel" id="cPhone" placeholder="+961 71 000 000"/></div>
     <div class="form-group"><label class="form-label">What are you looking for?</label>
       <select class="form-input" id="cType">
         <option>Looking for a specific perfume</option>
@@ -111,7 +112,8 @@
       </select>
     </div>
     <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="cMsg" style="height:110px" placeholder="Tell us what you're looking for…"></textarea></div>
-    <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:.5rem" onclick="sendViaEmail()">Send</button>
+    <div id="cError" style="color:#e88;font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>
+    <button class="btn btn-gold" id="cSubmitBtn" style="width:100%;justify-content:center;margin-top:.5rem" onclick="submitContactMessage()">Send</button>
   </div>
 </section>
 
@@ -127,18 +129,37 @@
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/products.js"></script>
+<script src="js/messages.js"></script>
 <script>
-const CONTACT_EMAIL = 'info@absfragrances.com';
-function sendViaEmail(){
+async function submitContactMessage(){
+  const errEl = document.getElementById('cError');
+  const btn = document.getElementById('cSubmitBtn');
+  errEl.style.display = 'none';
   const name  = document.getElementById('cName').value.trim();
   const email = document.getElementById('cEmail').value.trim();
+  const phone = document.getElementById('cPhone').value.trim();
   const type  = document.getElementById('cType').value;
   const msg   = document.getElementById('cMsg').value.trim();
-  if(!name){ alert('Please enter your name'); return; }
-  if(!email){ alert('Please enter your email address'); return; }
-  const subject = `Website Enquiry — ${type}`;
-  const body = `Name: ${name}\nEmail: ${email}\nEnquiry: ${type}\n\n${msg}`;
-  window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  if(!name){ errEl.textContent = 'Please enter your name'; errEl.style.display = 'block'; return; }
+  if(!email){ errEl.textContent = 'Please enter your email address'; errEl.style.display = 'block'; return; }
+  if(!msg){ errEl.textContent = 'Please enter a message'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await Messages.submitMessage({ name, email, phone, inquiry_type: type, message_text: msg });
+    document.getElementById('cName').value = '';
+    document.getElementById('cEmail').value = '';
+    document.getElementById('cPhone').value = '';
+    document.getElementById('cMsg').value = '';
+    errEl.style.display = 'none';
+    btn.textContent = 'Message Sent ✓';
+    setTimeout(() => { btn.textContent = 'Send'; }, 3000);
+  } catch (err) {
+    errEl.textContent = err.message || 'Could not reach the server.'; errEl.style.display = 'block';
+    btn.textContent = 'Send';
+  } finally {
+    btn.disabled = false;
+  }
 }
 document.addEventListener('DOMContentLoaded',()=>{
   updateNavbarAuth();

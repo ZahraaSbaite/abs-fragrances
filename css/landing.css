@@ -84,7 +84,7 @@
   
      /* ─── CATEGORY CARD COLORS ─── */
      .col-men {
-       background: #163846 !important;
+       background: var(--surface) !important;
      }
   
      .col-frankel {
@@ -124,13 +124,13 @@
   min-height: 100vh;
   display: grid; grid-template-columns: 1fr 1fr;
   align-items: center; padding: 8rem 4rem 4rem;
-  position: relative; overflow: hidden; background: var(--surface-dark);
+  position: relative; overflow: hidden; background: var(--surface);
 }
 .hero::before {
   content:''; position:absolute; inset:0;
   background: radial-gradient(ellipse 80% 60% at 70% 50%,rgba(196,162,112,.12) 0%,transparent 60%),
               radial-gradient(ellipse 50% 80% at 20% 80%,rgba(196,162,112,.07) 0%,transparent 50%),
-              linear-gradient(135deg,#0d2632 0%,#163846 45%,#1a3f50 100%);
+              linear-gradient(135deg,var(--surface-a) 0%,var(--surface-b) 45%,var(--surface-c) 100%);
   z-index:0;
 }
 .hero::after {
@@ -301,7 +301,7 @@
 .modal-actions-row { display:flex; gap:1rem; }
 
 /* ─── COLLECTIONS ─── */
-.collections { background:var(--surface-dark); padding:7rem 4rem; }
+.collections { background:var(--surface); padding:7rem 4rem; }
 .collections .section-title { color:var(--paper); }
 .collections .section-sub   { color:rgba(248,248,249,.5); }
 
@@ -310,7 +310,7 @@
 .collection-card:hover { transform:scale(1.02); }
 .col-bg { position:absolute; inset:0; transition:transform .6s var(--ease); }
 .collection-card:hover .col-bg { transform:scale(1.08); }
-.col-men     { background:linear-gradient(145deg,#1a4060,#0d2638,#163846); }
+.col-men     { background:linear-gradient(145deg,var(--surface-c),var(--surface-a),var(--surface-b)); }
 .col-frankel { background:linear-gradient(145deg,#2a3a30,#1a2820,#0f1e15); }
 .col-diamond { background:linear-gradient(145deg,#3a2a1a,#2a1a0a,#1a1008); }
 .col-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.1) 60%); z-index:1; }
@@ -352,7 +352,7 @@
 .scent-tag { font-family:var(--sans); font-size:.65rem; font-weight:400; letter-spacing:.15em; text-transform:uppercase; border:1px solid rgba(196,162,112,.4); color:var(--gold); padding:.4rem .9rem; }
 
 /* ─── DM CTA ─── */
-.dm-section { background:var(--surface-dark); text-align:center; padding:7rem 4rem; position:relative; overflow:hidden; }
+.dm-section { background:var(--surface); text-align:center; padding:7rem 4rem; position:relative; overflow:hidden; }
 .dm-section::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(196,162,112,.1) 0%,transparent 70%); }
 .dm-section .section-title { color:var(--paper); position:relative; z-index:1; }
 .dm-section .section-sub   { color:rgba(248,248,249,.5); position:relative; z-index:1; }
@@ -502,7 +502,7 @@
 }
 
 /* ─── CATEGORY CARD COLORS ─── */
-.col-men     { background: #163846 !important; }
+.col-men     { background: var(--surface) !important; }
 .col-frankel { background: #AF737B !important; }
 .col-diamond { background: #C4A270 !important; }
 

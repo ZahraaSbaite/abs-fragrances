@@ -7,7 +7,7 @@
 
 /* ─── SIDEBAR ─── */
 .sidebar {
-  background: var(--surface-dark);
+  background: var(--surface);
   display: flex; flex-direction: column;
   position: sticky; top: 0; height: 100vh; overflow-y: auto;
   flex-shrink: 0;
@@ -132,7 +132,7 @@
 .filter-select:focus { border-color: var(--gold); }
 
 /* ─── MOBILE SIDEBAR ─── */
-.sidebar-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 300; background: var(--surface-dark); color:var(--paper); border: none; width: 40px; height: 40px; cursor: pointer; align-items: center; justify-content: center; }
+.sidebar-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 300; background: var(--surface); color:var(--paper); border: none; width: 40px; height: 40px; cursor: pointer; align-items: center; justify-content: center; }
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 198; }
 
 /* ─── RESPONSIVE ─── */

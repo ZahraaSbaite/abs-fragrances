@@ -7,6 +7,7 @@ const productsRoutes = require('./src/routes/products.routes');
 const ordersRoutes = require('./src/routes/orders.routes');
 const reviewsRoutes = require('./src/routes/reviews.routes');
 const categoriesRoutes = require('./src/routes/categories.routes');
+const messagesRoutes = require('./src/routes/messages.routes');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/api/products', productsRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/categories', categoriesRoutes);
+app.use('/api/messages', messagesRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {

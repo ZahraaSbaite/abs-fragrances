@@ -45,6 +45,12 @@ function refreshPendingBadge() {
   const cnt = ordersCache.filter(o => o.status === 'Pending').length;
   const b = document.getElementById('pendingBadge'); if (b) { b.textContent = cnt; b.style.display = cnt > 0 ? '' : 'none'; }
 }
+let messagesCache = [];
+async function loadMessagesData() {
+  messagesCache = await Messages.fetchAll(getToken());
+  const b = document.getElementById('messagesBadge'); if (b) { b.textContent = messagesCache.length; b.style.display = messagesCache.length > 0 ? '' : 'none'; }
+  return messagesCache;
+}
 
 /* ── CONFIRM ── */
 function confirm2(title, msg, cb) {
@@ -803,6 +809,65 @@ async function saveReviewForm() {
   }
 }
 
+/* ── CUSTOMER MESSAGES (from the "Send us a Message" contact form) ── */
+function renderMessages() {
+  const html = `
+    <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05)">
+      <div class="admin-filter-bar">
+        <span style="font-family:var(--sans);font-size:.72rem;color:var(--muted)">${messagesCache.length} message${messagesCache.length === 1 ? '' : 's'}</span>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>From</th><th>Type</th><th>Message</th><th>Received</th><th>Actions</th></tr></thead>
+        <tbody>${renderMessageRows(messagesCache)}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('dashContent').innerHTML = html;
+}
+function messageDate(iso) {
+  try { return new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  catch { return ''; }
+}
+function renderMessageRows(msgs) {
+  if (!msgs.length) return `<tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--muted)">No messages yet.</td></tr>`;
+  return msgs.map(m => {
+    const waDigits = (m.phone || '').replace(/[^\d]/g, '');
+    const emailSubject = encodeURIComponent('Re: Your message to Abs Fragrances');
+    const emailBody = encodeURIComponent(`Hi ${m.name},\n\n`);
+    return `<tr>
+      <td>
+        <div style="font-size:.82rem;color:var(--navy)">${esc(m.name)}</div>
+        <div style="font-size:.68rem;color:var(--muted)">${esc(m.email)}</div>
+        ${m.phone ? `<div style="font-size:.68rem;color:var(--muted)">${esc(m.phone)}</div>` : ''}
+      </td>
+      <td style="font-size:.72rem;color:var(--muted)">${esc(m.inquiry_type || '—')}</td>
+      <td style="font-size:.75rem;color:var(--muted);max-width:320px">${esc((m.message_text || '').slice(0, 140))}${(m.message_text || '').length > 140 ? '…' : ''}</td>
+      <td style="font-size:.72rem;color:var(--muted);white-space:nowrap">${messageDate(m.created_at)}</td>
+      <td><div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        <a class="btn btn-outline btn-sm" href="mailto:${esc(m.email)}?subject=${emailSubject}&body=${emailBody}" title="Reply by email">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>Email
+        </a>
+        ${waDigits ? `<a class="btn btn-outline btn-sm" href="https://wa.me/${waDigits}" target="_blank" title="Reply on WhatsApp">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>WhatsApp
+        </a>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deleteMessageRow('${m.id}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Del
+        </button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function deleteMessageRow(id) {
+  const m = messagesCache.find(x => x.id === id);
+  confirm2('Delete this message?', `The message from ${m?.name || 'this customer'} will be permanently removed.`, async () => {
+    try {
+      await Messages.deleteMessage(id, getToken());
+      showToast('Message deleted');
+      await loadMessagesData();
+      renderMessages();
+    } catch (err) { showToast(err.message || 'Failed to delete message', 'error'); }
+  });
+}
+
 /* ── ADMIN PROFILE ── */
 function renderProfile() {
   const s = session || {};
@@ -868,7 +933,7 @@ async function saveProfile() {
 /* ── VIEW ROUTER ── */
 let currentView = 'overview';
 let viewToken = 0; // bumped on every switchView call; a stale (superseded) call's render is dropped
-const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', reviews: 'Customer Reviews', profile: 'Admin Profile' };
+const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile' };
 async function switchView(view) {
   const myToken = ++viewToken;
   currentView = view;
@@ -880,13 +945,14 @@ async function switchView(view) {
     document.getElementById('dashContent').innerHTML = '<div style="padding:4rem;text-align:center;color:var(--muted);font-family:var(--sans);font-size:.85rem">Loading…</div>';
   }
 
-  if (view === 'overview') { await Promise.all([loadOrdersData(), loadProductsData()]); if (myToken !== viewToken) return; renderOverview(); }
+  if (view === 'overview') { await Promise.all([loadOrdersData(), loadProductsData(), loadMessagesData()]); if (myToken !== viewToken) return; renderOverview(); }
   else if (view === 'orders') { await loadOrdersData(); if (myToken !== viewToken) return; renderOrders(); }
   else if (view === 'products') { await loadProductsData(); if (myToken !== viewToken) return; renderProducts(); }
   else if (view === 'addProduct') { await loadProductsData(); if (myToken !== viewToken) return; openProductForm(); switchView('products'); return; }
   else if (view === 'brands') { await loadProductsData(); if (myToken !== viewToken) return; renderBrands(); }
   else if (view === 'signatureScents') { await loadProductsData(); if (myToken !== viewToken) return; renderSignatureScents(); }
   else if (view === 'reviews') { await loadReviewsData(); if (myToken !== viewToken) return; renderReviews(); }
+  else if (view === 'messages') { await loadMessagesData(); if (myToken !== viewToken) return; renderMessages(); }
   else if (view === 'profile') { renderProfile(); }
 }
 

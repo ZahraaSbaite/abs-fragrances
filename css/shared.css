@@ -16,15 +16,22 @@
   --ink:        var(--navy);
   --ink-rgb:    22,56,70;
   --bg-rgb:     248,248,249;
-  /* --paper: light text color for sections that are deliberately dark
-     in BOTH themes (hero, footer, page banners, collections). Fixed on
-     purpose, not derived from --bg — see --surface-dark below. */
+  /* --paper: light text color for sections that use --surface below as
+     their background. Fixed on purpose, not derived from --bg, since
+     --surface stays dark in both themes (just a different hue). */
   --paper:      #F8F8F9;
-  /* --surface-dark: background for those same permanently-dark
-     sections. Fixed on purpose so they don't invert to a light card
-     when dark mode flips --navy — they're a brand statement, not a
-     surface that should adapt. */
-  --surface-dark: #163846;
+  /* --surface / --surface-a/b/c: background for sections meant to
+     always read as a dark "surface" (hero, footer strip, page banners,
+     collections, sidebars) — navy-toned in light mode, warm charcoal
+     in dark mode (see the [data-theme="dark"] overrides below), so
+     dark mode stays one consistent dark palette instead of leaving
+     these sections stuck on navy blue next to everything else's
+     charcoal. -a/-b/-c are the three stops used by gradients built
+     from this family. */
+  --surface:    #163846;
+  --surface-a:  #0d2632;
+  --surface-b:  #163846;
+  --surface-c:  #1a3f50;
   --accent:     var(--navy);
   --strip-paper: #FAF5E9; /* warm ivory card stock for the review "test strip" cards */
   --serif:      'Playfair Display', Georgia, serif;
@@ -45,6 +52,10 @@
   --muted:      #A8A296;
   --ink-rgb:    243,239,232;
   --bg-rgb:     28,27,24;
+  --surface:    #26241F;
+  --surface-a:  #1C1B18;
+  --surface-b:  #26241F;
+  --surface-c:  #302D26;
   /* --strip-paper stays paper-toned but tuned dark, so review-card text
      (which uses --ink and correctly flips light) keeps contrast against
      it instead of going light-on-light. */
@@ -216,7 +227,7 @@ body, .about-value, footer, .navbar, .card, section {
 .mobile-nav-bg.open { opacity: 1; pointer-events: all; }
 
 /* ─── TRUST BAR ─── */
-.trust-bar { background: var(--surface-dark); padding: 1rem 4rem; display: flex; align-items: center; justify-content: center; gap: 3rem; flex-wrap: wrap; }
+.trust-bar { background: var(--surface); padding: 1rem 4rem; display: flex; align-items: center; justify-content: center; gap: 3rem; flex-wrap: wrap; }
 .trust-item { display: flex; align-items: center; gap: .7rem; font-family: var(--sans); font-size: .68rem; font-weight: 400; letter-spacing: .18em; text-transform: uppercase; color: rgba(248,248,249,.6); white-space: nowrap; }
 .trust-divider { width: 1px; height: 20px; background: rgba(196,162,112,.25); }
 

@@ -129,3 +129,20 @@ CREATE TABLE IF NOT EXISTS categories (
   description  TEXT,                    -- short blurb shown under the name
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ─────────────────────────────────────────────
+-- MESSAGES
+-- Submissions from the "Send us a Message" contact form. Saved here
+-- instead of relying on the visitor's own email client — admin reads
+-- them in the dashboard and replies manually via email or WhatsApp
+-- using the contact info given.
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS messages (
+  id             TEXT PRIMARY KEY,
+  name           TEXT NOT NULL,
+  email          TEXT NOT NULL,
+  phone          TEXT,
+  inquiry_type   TEXT,
+  message_text   TEXT NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
