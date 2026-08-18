@@ -953,10 +953,84 @@ async function saveProfile() {
   renderProfile();
 }
 
+/* ── SOCIAL & CONTACT (WhatsApp number + social links, shown site-wide) ── */
+let siteSettingsCache = {};
+async function loadSiteSettingsData() {
+  const res = await fetch(`${API_BASE}/settings`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch settings');
+  siteSettingsCache = data.settings || {};
+  return siteSettingsCache;
+}
+function renderSiteSettings() {
+  const s = siteSettingsCache;
+  document.getElementById('dashContent').innerHTML = `
+    <div class="profile-card">
+      <div class="profile-form">
+        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">WhatsApp</div>
+        <div class="form-group">
+          <label class="form-label">Business Number</label>
+          <input class="form-input" id="ssgWhatsapp" placeholder="e.g. 96178901234" value="${esc(s.whatsapp_number || '')}"/>
+          <span class="form-hint">Digits only, with country code, no + or spaces. Used for every WhatsApp link and button on the site.</span>
+        </div>
+        <div class="profile-form-divider"></div>
+        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">Social Links</div>
+        <div class="form-group">
+          <label class="form-label">Facebook URL</label>
+          <input class="form-input" id="ssgFacebook" placeholder="https://facebook.com/absfragrances" value="${esc(s.facebook_url || '')}"/>
+          <span class="form-hint">Leave blank to hide the Facebook icon/link site-wide.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Instagram URL</label>
+          <input class="form-input" id="ssgInstagram" placeholder="https://instagram.com/absfragrances" value="${esc(s.instagram_url || '')}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">TikTok URL</label>
+          <input class="form-input" id="ssgTiktok" placeholder="https://www.tiktok.com/@abs.fragrances" value="${esc(s.tiktok_url || '')}"/>
+          <span class="form-hint">Leave blank to hide the TikTok icon/link site-wide.</span>
+        </div>
+        <div id="ssgError" style="color:var(--danger);font-family:var(--sans);font-size:.78rem;display:none"></div>
+        <div class="profile-actions">
+          <button class="btn btn-gold" id="ssgSaveBtn" onclick="saveSiteSettingsForm()">Save Changes</button>
+        </div>
+      </div>
+    </div>`;
+}
+async function saveSiteSettingsForm() {
+  const errEl = document.getElementById('ssgError');
+  const btn = document.getElementById('ssgSaveBtn');
+  errEl.style.display = 'none';
+
+  const whatsapp_number = document.getElementById('ssgWhatsapp').value.trim().replace(/\D/g, '');
+  const facebook_url = document.getElementById('ssgFacebook').value.trim();
+  const instagram_url = document.getElementById('ssgInstagram').value.trim();
+  const tiktok_url = document.getElementById('ssgTiktok').value.trim();
+
+  if (!whatsapp_number) { errEl.textContent = 'WhatsApp number is required.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const res = await fetch(`${API_BASE}/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ whatsapp_number, facebook_url, instagram_url, tiktok_url }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Failed to save settings'; errEl.style.display = 'block'; return; }
+    siteSettingsCache = data.settings;
+    showToast('Social & contact settings updated!', 'success');
+    renderSiteSettings();
+  } catch (err) {
+    errEl.textContent = 'Could not reach the server.'; errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  }
+}
+
 /* ── VIEW ROUTER ── */
 let currentView = 'overview';
 let viewToken = 0; // bumped on every switchView call; a stale (superseded) call's render is dropped
-const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile' };
+const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile', siteSettings: 'Social & Contact' };
 async function switchView(view) {
   const myToken = ++viewToken;
   currentView = view;
@@ -977,6 +1051,7 @@ async function switchView(view) {
   else if (view === 'reviews') { await loadReviewsData(); if (myToken !== viewToken) return; renderReviews(); }
   else if (view === 'messages') { await loadMessagesData(); if (myToken !== viewToken) return; renderMessages(); }
   else if (view === 'profile') { renderProfile(); }
+  else if (view === 'siteSettings') { await loadSiteSettingsData(); if (myToken !== viewToken) return; renderSiteSettings(); }
 }
 
 /* ── MOBILE SIDEBAR ── */

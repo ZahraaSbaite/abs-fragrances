@@ -91,5 +91,5 @@ function cartWhatsAppLink() {
   const msg = cart.length
     ? `Hi! I'd like to order:\n\n${lines}\n\nTotal: ${total}`
     : `Hi! I have a question about your perfumes.`;
-  return 'https://wa.me/96178901234?text=' + encodeURIComponent(msg);
+  return buildWaLink(msg);
 }
