@@ -12,7 +12,10 @@ const settingsRoutes = require('./src/routes/settings.routes');
 
 const app = express();
 
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
+// FRONTEND_ORIGIN can be a single origin or a comma-separated list, so the
+// site can be reachable from more than one domain during a hosting migration.
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || '*').split(',').map(o => o.trim());
+app.use(cors({ origin: allowedOrigins.includes('*') ? '*' : allowedOrigins }));
 app.use(express.json());
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
