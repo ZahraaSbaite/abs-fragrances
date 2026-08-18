@@ -9,7 +9,7 @@ if (session) {
 /* ── HELPERS ── */
 function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function getBrandName(id) { return BRANDS[id]?.name || id || '—'; }
-function getBrandEmoji(id) { const m = { rasasi: '🌹', lattafa: '🔮', rueBroca: '🌿', frenchAvenue: '🗼', assaf: '🪔', afnan: '💎', rayhaan: '🌸', alHambra: '🏰' }; return m[id] || '🧴'; }
+function getBrandEmoji(id) { const m = { rasasi: '🌹', lattafa: '🔮', rueBroca: '🌿', frenchAvenue: '🗼', assaf: '🪔', afnan: '💎', rayhaan: '🌸', alHambra: '🏰', franceCollection: '⚜️' }; return m[id] || '🧴'; }
 
 // Matches the backend's real order.status values exactly.
 const ORDER_STATUSES = [
@@ -126,6 +126,7 @@ function openProductForm(existingId) {
     Object.values(BRANDS).map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   brandSel.value = ''; document.getElementById('fpStock').value = 'true';
   document.getElementById('fpFeatured').value = 'false';
+  document.getElementById('fpInspired').value = 'false';
   document.getElementById('fpError').style.display = 'none';
   document.getElementById('photoPreviewImg').style.display = 'none';
   document.getElementById('photoPlaceholder').style.display = 'flex';
@@ -144,6 +145,7 @@ function openProductForm(existingId) {
       document.getElementById('fpBadge').value = p.badge || '';
       document.getElementById('fpStock').value = p.stock === false ? 'false' : 'true';
       document.getElementById('fpFeatured').value = p.isFeatured ? 'true' : 'false';
+      document.getElementById('fpInspired').value = p.isInspired ? 'true' : 'false';
       document.getElementById('fpPrice').value = p.priceCents != null ? (p.priceCents / 100).toFixed(2) : '';
       if (p.image) {
         document.getElementById('fpPhoto').value = p.image;
@@ -171,6 +173,7 @@ async function saveProductForm() {
   const badge = document.getElementById('fpBadge').value;
   const stock = document.getElementById('fpStock').value === 'true';
   const featured = document.getElementById('fpFeatured').value === 'true';
+  const inspired = document.getElementById('fpInspired').value === 'true';
   const photo = document.getElementById('fpPhoto').value.trim();
   const priceStr = document.getElementById('fpPrice').value.trim();
 
@@ -184,7 +187,7 @@ async function saveProductForm() {
     name, brand_id: brand, gender, intensity,
     short_desc: shortDesc, full_desc: fullDesc || shortDesc,
     notes, badge, badge_class: badgeClass,
-    in_stock: stock, image_url: photo || null, is_featured: featured,
+    in_stock: stock, image_url: photo || null, is_featured: featured, is_inspired: inspired,
     price_cents: Math.round(parseFloat(priceStr) * 100),
   };
 
@@ -380,7 +383,7 @@ function renderProdRows(prods) {
     const stockBadge = p.stock !== false ? `<span style="font-size:.6rem;font-family:var(--sans);font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .6rem;background:rgba(39,174,96,.12);color:#2e7d32">In Stock</span>` : `<span style="font-size:.6rem;font-family:var(--sans);font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .6rem;background:rgba(192,57,43,.08);color:var(--danger)">Out</span>`;
     return `<tr data-name="${(p.name || '').toLowerCase()}" data-brand="${p.brand || ''}" data-gender="${p.gender || ''}">
       <td><div style="width:48px;height:56px;overflow:hidden;background:var(--bg)">${thumb}${fallback}</div></td>
-      <td><div style="font-weight:400;font-size:.82rem;color:var(--navy);display:flex;align-items:center;gap:.4rem">${esc(p.name)}${p.isFeatured ? '<span title="Featured on homepage">⭐</span>' : ''}</div>${p.badge ? `<span style="font-size:.55rem;font-family:var(--sans);font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .5rem;background:rgba(196,162,112,.15);color:var(--gold)">${esc(p.badge)}</span>` : ''}</td>
+      <td><div style="font-weight:400;font-size:.82rem;color:var(--navy);display:flex;align-items:center;gap:.4rem">${esc(p.name)}${p.isFeatured ? '<span title="Featured on homepage">⭐</span>' : ''}</div><div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">${p.badge ? `<span style="font-size:.55rem;font-family:var(--sans);font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .5rem;background:rgba(196,162,112,.15);color:var(--gold)">${esc(p.badge)}</span>` : ''}${p.isInspired ? `<span style="font-size:.55rem;font-family:var(--sans);font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .5rem;border:1px solid rgba(196,162,112,.4);color:var(--gold)">Inspired By</span>` : ''}</div></td>
       <td style="font-size:.78rem">${getBrandEmoji(p.brand)} ${esc(getBrandName(p.brand))}</td>
       <td style="font-size:.75rem;color:var(--muted)">${p.gender}</td>
       <td style="font-size:.8rem;font-weight:500">${p.price}</td>
@@ -679,6 +682,7 @@ function openSignatureScentForm() {
   ['ssName', 'ssDesc', 'ssPhoto', 'ssPrice'].forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('ssGender').value = 'Men';
   document.getElementById('ssType').value = '';
+  document.getElementById('ssInspired').value = 'false';
   updateSignatureScentTypePreview();
   document.getElementById('ssPhotoPreviewImg').style.display = 'none';
   document.getElementById('ssPhotoPlaceholder').style.display = 'flex';
@@ -699,6 +703,7 @@ async function saveSignatureScentForm() {
   const shortDesc = document.getElementById('ssDesc').value.trim();
   const photo = document.getElementById('ssPhoto').value.trim();
   const type = document.getElementById('ssType').value;
+  const inspired = document.getElementById('ssInspired').value === 'true';
 
   if (!name) { errEl.textContent = 'Perfume name is required'; errEl.style.display = 'block'; return; }
   if (!brand) { errEl.textContent = 'Please select a brand'; errEl.style.display = 'block'; return; }
@@ -710,7 +715,7 @@ async function saveSignatureScentForm() {
     id: slugify(name), name, brand_id: brand, gender,
     short_desc: shortDesc, full_desc: shortDesc,
     badge: type, badge_class: badgeClass,
-    in_stock: true, image_url: photo || null, is_featured: true,
+    in_stock: true, image_url: photo || null, is_featured: true, is_inspired: inspired,
     price_cents: Math.round(parseFloat(priceStr) * 100),
   };
 

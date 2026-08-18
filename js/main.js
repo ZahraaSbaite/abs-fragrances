@@ -18,7 +18,7 @@ function escapeHtml(s) {
 
 /* ─── Get brand emoji ─── */
 function getBrandEmoji(brandId) {
-  const emojis = { rasasi: '🌹', lattafa: '🔮', rueBroca: '🌿', frenchAvenue: '🗼', assaf: '🪔', afnan: '💎', rayhaan: '🌸', alHambra: '🏰' };
+  const emojis = { rasasi: '🌹', lattafa: '🔮', rueBroca: '🌿', frenchAvenue: '🗼', assaf: '🪔', afnan: '💎', rayhaan: '🌸', alHambra: '🏰', franceCollection: '⚜️' };
   return emojis[brandId] || '🧴';
 }
 function getBrandName(brandId) {
@@ -50,6 +50,7 @@ function featuredCardHTML(p) {
       </div>
       <div class="product-info">
         <div class="product-collection">${escapeHtml(brandName)} · ${p.gender}</div>
+        ${p.isInspired ? `<span class="inspired-tag">✦ Inspired By</span>` : ''}
         <h3 class="product-name">${escapeHtml(p.name)}</h3>
         <p class="product-desc">${escapeHtml(p.shortDesc || '')}</p>
         <div class="product-footer">
@@ -252,6 +253,7 @@ function productCardHTML(p) {
       </div>
       <div class="catalog-card-body">
         <div class="catalog-card-brand">${escapeHtml(brandName)}</div>
+        ${p.isInspired ? `<span class="inspired-tag">✦ Inspired By</span>` : ''}
         <div class="catalog-card-name">${escapeHtml(p.name)}</div>
         <div class="catalog-card-gender">${p.gender} · ${p.intensity || 'Moderate'}</div>
         <div class="catalog-card-notes">${(p.notes || []).slice(0, 3).map(n => `<span class="catalog-note">${escapeHtml(n)}</span>`).join('')}</div>
@@ -288,6 +290,7 @@ function openProductModal(productId) {
       ${emoji}
     </div>
     <div class="modal-collection">${escapeHtml(brandName)} — ${escapeHtml(p.gender)}</div>
+    ${p.isInspired ? `<span class="inspired-tag" style="margin-bottom:.5rem">✦ Inspired By — not the original brand-name fragrance</span>` : ''}
     <div class="modal-product-name">${escapeHtml(p.name)}</div>
 <div style="font-family:var(--serif2);font-style:italic;font-size:1.1rem;color:var(--gold);margin-bottom:.5rem">${p.price}</div>
       ${p.badge ? `<span class="badge ${p.badgeClass || 'badge-muted'}">${p.badge}</span>` : ''}

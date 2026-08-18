@@ -48,11 +48,13 @@ CREATE TABLE IF NOT EXISTS products (
   in_stock     BOOLEAN NOT NULL DEFAULT true,
   image_url    TEXT,
   is_featured  BOOLEAN NOT NULL DEFAULT false, -- shown in the homepage "Our Signature Scents" section
+  is_inspired  BOOLEAN NOT NULL DEFAULT false, -- premium-quality "inspired by" fragrance, not an original — shown with a disclosure badge, independent of the Bestseller/New Arrival badge
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Safe to re-run against a database where `products` already exists without this column.
+-- Safe to re-run against a database where `products` already exists without these columns.
 ALTER TABLE products ADD COLUMN IF NOT EXISTS is_featured BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS is_inspired BOOLEAN NOT NULL DEFAULT false;
 
 CREATE INDEX IF NOT EXISTS idx_products_brand  ON products(brand_id);
 CREATE INDEX IF NOT EXISTS idx_products_gender ON products(gender);

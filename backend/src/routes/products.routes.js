@@ -121,7 +121,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', requireAuth, requireAdmin, async (req, res) => {
   const {
     id, name, brand_id, gender, notes, short_desc, full_desc,
-    badge, badge_class, price_cents, intensity, in_stock, image_url, is_featured,
+    badge, badge_class, price_cents, intensity, in_stock, image_url, is_featured, is_inspired,
   } = req.body;
 
   if (!id || !name || !gender || price_cents == null) {
@@ -131,12 +131,12 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
     const result = await pool.query(
       `INSERT INTO products
-        (id, name, brand_id, gender, notes, short_desc, full_desc, badge, badge_class, price_cents, intensity, in_stock, image_url, is_featured)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+        (id, name, brand_id, gender, notes, short_desc, full_desc, badge, badge_class, price_cents, intensity, in_stock, image_url, is_featured, is_inspired)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        RETURNING *`,
       [id, name, brand_id || null, gender, notes || [], short_desc || null, full_desc || null,
         badge || null, badge_class || null, price_cents, intensity || null, in_stock !== false, image_url || null,
-        is_featured === true]
+        is_featured === true, is_inspired === true]
     );
     res.status(201).json({ product: result.rows[0] });
   } catch (err) {
@@ -149,7 +149,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 // PUT /api/products/:id — admin only (partial update)
 router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
   const fields = ['name', 'brand_id', 'gender', 'notes', 'short_desc', 'full_desc',
-    'badge', 'badge_class', 'price_cents', 'intensity', 'in_stock', 'image_url', 'is_featured'];
+    'badge', 'badge_class', 'price_cents', 'intensity', 'in_stock', 'image_url', 'is_featured', 'is_inspired'];
   const updates = [];
   const params = [];
 
