@@ -128,7 +128,7 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
 .about-body strong { color:var(--ink); font-weight:500; }
 .about-values {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   margin: 3rem 0;
 }
