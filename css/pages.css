@@ -121,15 +121,15 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
 .brand-section-count{ font-family:var(--sans); font-size:.72rem; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); }
 
 /* ─── ABOUT PAGE ─── */
-.about-section { padding:5rem 4rem; max-width:900px; margin:0 auto; }
-.about-lead { font-family:var(--serif2); font-size:1.4rem; font-weight:300; line-height:1.8; color:var(--ink); margin-bottom:3rem; }
-.about-body { font-family:var(--sans); font-size:.92rem; line-height:1.9; color:var(--muted); }
+.about-section { padding:5rem 4rem; max-width:1200px; margin:0 auto; }
+.about-lead { font-family:var(--serif2); font-size:1.4rem; font-weight:300; line-height:1.8; color:var(--ink); margin-bottom:3rem; max-width:700px; margin-left:auto; margin-right:auto; }
+.about-body { font-family:var(--sans); font-size:.92rem; line-height:1.9; color:var(--muted); max-width:700px; margin-left:auto; margin-right:auto; }
 .about-body p { margin-bottom:1.5rem; }
 .about-body strong { color:var(--ink); font-weight:500; }
 .about-values {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
   margin: 3rem 0;
 }
 
