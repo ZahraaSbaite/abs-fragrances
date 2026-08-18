@@ -5,11 +5,14 @@
  * data-fb-link / data-tiktok-link / data-email-link attribute. Elements keep
  * their original hardcoded href as a fallback until this resolves (or if the API is down).
  */
+// These are the last-known-good values, used until the /api/settings
+// fetch below resolves (or as a fallback if the API is unreachable), so a
+// slow/failed deploy doesn't make already-real links vanish from the site.
 window.SITE_SETTINGS = {
   whatsapp_number: '96178901234',
   facebook_url: '',
   instagram_url: 'https://www.instagram.com/absfragrances',
-  tiktok_url: '',
+  tiktok_url: 'https://www.tiktok.com/@abs.fragrances',
   email: '',
 };
 
