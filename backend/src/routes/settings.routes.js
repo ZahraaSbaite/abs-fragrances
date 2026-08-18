@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 
 // PUT /api/settings — admin only
 router.put('/', requireAuth, requireAdmin, async (req, res) => {
-  const fields = ['whatsapp_number', 'facebook_url', 'instagram_url', 'tiktok_url'];
+  const fields = ['whatsapp_number', 'facebook_url', 'instagram_url', 'tiktok_url', 'email'];
   const updates = [];
   const params = [];
 

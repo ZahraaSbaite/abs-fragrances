@@ -2,14 +2,15 @@
  * ABS FRAGRANCES — settings.js
  * Loads the site's WhatsApp number + social links from the backend and
  * fills them into every element marked with a data-wa-link / data-ig-link /
- * data-fb-link / data-tiktok-link attribute. Elements keep their original
- * hardcoded href as a fallback until this resolves (or if the API is down).
+ * data-fb-link / data-tiktok-link / data-email-link attribute. Elements keep
+ * their original hardcoded href as a fallback until this resolves (or if the API is down).
  */
 window.SITE_SETTINGS = {
   whatsapp_number: '96178901234',
   facebook_url: '',
   instagram_url: 'https://www.instagram.com/absfragrances',
   tiktok_url: '',
+  email: '',
 };
 
 function buildWaLink(text) {
@@ -36,6 +37,13 @@ function applySiteSettingsToDOM() {
   document.querySelectorAll('[data-tiktok-link]').forEach(el => {
     if (s.tiktok_url) { el.href = s.tiktok_url; el.style.display = ''; }
     else { el.style.display = 'none'; }
+  });
+  document.querySelectorAll('[data-email-link]').forEach(el => {
+    if (s.email) { el.href = 'mailto:' + s.email; el.style.display = ''; }
+    else { el.style.display = 'none'; }
+  });
+  document.querySelectorAll('[data-email-text]').forEach(el => {
+    if (s.email) el.textContent = s.email;
   });
 }
 window.applySiteSettingsToDOM = applySiteSettingsToDOM;

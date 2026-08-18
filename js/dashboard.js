@@ -989,6 +989,13 @@ function renderSiteSettings() {
           <input class="form-input" id="ssgTiktok" placeholder="https://www.tiktok.com/@abs.fragrances" value="${esc(s.tiktok_url || '')}"/>
           <span class="form-hint">Leave blank to hide the TikTok icon/link site-wide.</span>
         </div>
+        <div class="profile-form-divider"></div>
+        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">Email</div>
+        <div class="form-group">
+          <label class="form-label">Gmail Address</label>
+          <input class="form-input" id="ssgEmail" placeholder="absfragrances@gmail.com" value="${esc(s.email || '')}"/>
+          <span class="form-hint">Leave blank to hide the email icon/link site-wide.</span>
+        </div>
         <div id="ssgError" style="color:var(--danger);font-family:var(--sans);font-size:.78rem;display:none"></div>
         <div class="profile-actions">
           <button class="btn btn-gold" id="ssgSaveBtn" onclick="saveSiteSettingsForm()">Save Changes</button>
@@ -1005,6 +1012,7 @@ async function saveSiteSettingsForm() {
   const facebook_url = document.getElementById('ssgFacebook').value.trim();
   const instagram_url = document.getElementById('ssgInstagram').value.trim();
   const tiktok_url = document.getElementById('ssgTiktok').value.trim();
+  const email = document.getElementById('ssgEmail').value.trim();
 
   if (!whatsapp_number) { errEl.textContent = 'WhatsApp number is required.'; errEl.style.display = 'block'; return; }
 
@@ -1013,7 +1021,7 @@ async function saveSiteSettingsForm() {
     const res = await fetch(`${API_BASE}/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ whatsapp_number, facebook_url, instagram_url, tiktok_url }),
+      body: JSON.stringify({ whatsapp_number, facebook_url, instagram_url, tiktok_url, email }),
     });
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error || 'Failed to save settings'; errEl.style.display = 'block'; return; }

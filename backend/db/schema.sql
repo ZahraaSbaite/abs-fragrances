@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS messages (
 -- Single-row table for the WhatsApp business number and social links,
 -- editable from the admin dashboard instead of being hardcoded across
 -- every page. The frontend fetches this once and fills in every
--- WhatsApp/Facebook/Instagram/TikTok link on the site.
+-- WhatsApp/Facebook/Instagram/TikTok/Email link on the site.
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS site_settings (
   id               TEXT PRIMARY KEY DEFAULT 'main',
@@ -162,8 +162,10 @@ CREATE TABLE IF NOT EXISTS site_settings (
   facebook_url     TEXT,
   instagram_url    TEXT,
   tiktok_url       TEXT,
+  email            TEXT,             -- e.g. 'absfragrances@gmail.com'
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS email TEXT;
 INSERT INTO site_settings (id, whatsapp_number, instagram_url, tiktok_url)
   VALUES ('main', '96178901234', 'https://www.instagram.com/absfragrances?igsh=YmV2ZWRiNzRpZm5k', 'https://www.tiktok.com/@abs.fragrances?_r=1&_t=ZS-948wvGeNusK')
   ON CONFLICT (id) DO NOTHING;
