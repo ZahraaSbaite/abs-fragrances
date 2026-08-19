@@ -14,6 +14,7 @@ window.SITE_SETTINGS = {
   instagram_url: 'https://www.instagram.com/absfragrances',
   tiktok_url: 'https://www.tiktok.com/@abs.fragrances',
   email: '',
+  wish_money_number: '',
 };
 
 function buildWaLink(text) {

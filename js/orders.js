@@ -118,21 +118,65 @@ async function handleCheckoutSubmit(e) {
   submitBtn.disabled = true;
   submitBtn.textContent = 'Placing order...';
   try {
+    const paymentMethod = form.payment_method.value;
     const order = await Orders.placeGuestOrder({
       customer_name: form.customer_name.value.trim(),
       customer_phone: form.customer_phone.value.trim(),
       customer_email: form.customer_email.value.trim(),
       customer_address: form.customer_address.value.trim(),
       location_url: form.location_url.value,
-      payment_method: form.payment_method.value,
+      payment_method: paymentMethod,
       note: form.note.value.trim(),
     });
-    clearCart();
-    closeCart();
-    showToast(`Order ${order.id} placed! We'll contact you shortly 🎉`, 'success');
+    saveCart([]); // clear the local cart silently — the order is already recorded server-side
+    if (paymentMethod === 'Wish Money') {
+      renderWishMoneyInstructions(order);
+    } else {
+      renderCartDrawer();
+      closeCart();
+      showToast(`Order ${order.id} placed! We'll contact you shortly 🎉`, 'success');
+    }
   } catch (err) {
     showToast(err.message || 'Failed to place order', 'error');
     submitBtn.disabled = false;
     submitBtn.textContent = 'Confirm Order';
   }
+}
+function renderWishMoneyInstructions(order) {
+  const body = document.getElementById('cartBody');
+  if (!body) return;
+  const footer = document.querySelector('.cart-footer');
+  if (footer) footer.style.display = 'none';
+  const number = (window.SITE_SETTINGS && window.SITE_SETTINGS.wish_money_number) || '';
+  body.innerHTML = `
+    <div class="wm-instructions">
+      <div class="wm-icon">💸</div>
+      <h3>Almost there!</h3>
+      <p>Your order <strong>${order.id}</strong> is reserved. Send the amount below via Wish Money to confirm it — we'll verify the payment and start processing your order.</p>
+      <div class="wm-box">
+        <div class="wm-row">
+          <span class="wm-row-label">Amount to Send</span>
+          <span class="wm-row-val">${formatPrice(order.total_cents)}</span>
+        </div>
+        <div class="wm-row">
+          <span class="wm-row-label">Wish Money Number</span>
+          ${number
+            ? `<div class="wm-number-copy"><span id="wmNumberVal">${number}</span><button type="button" class="wm-copy-btn" onclick="copyWishMoneyNumber()">Copy</button></div>`
+            : `<span class="wm-row-val" style="font-size:.82rem;color:var(--danger)">Not set yet — contact us on WhatsApp</span>`}
+        </div>
+      </div>
+      <p>Once we receive your payment, your order moves to processing automatically. Questions? Message us on WhatsApp with your order ID.</p>
+      <button type="button" class="checkout-submit-btn" onclick="finishWishMoneyOrder()">Done</button>
+    </div>`;
+}
+function copyWishMoneyNumber() {
+  const el = document.getElementById('wmNumberVal');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent.trim())
+    .then(() => showToast('Number copied ✓', 'success'))
+    .catch(() => showToast('Could not copy — please copy it manually', 'error'));
+}
+function finishWishMoneyOrder() {
+  renderCartDrawer();
+  closeCart();
 }

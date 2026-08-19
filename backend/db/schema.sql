@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS orders (
   payment_method    TEXT NOT NULL DEFAULT 'Cash on Delivery',
   note              TEXT,
   status            TEXT NOT NULL DEFAULT 'Pending'
-                      CHECK (status IN ('Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled')),
+                      CHECK (status IN ('Pending', 'Pending Payment', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled')),
   subtotal_cents    INTEGER NOT NULL,
   delivery_cents    INTEGER NOT NULL DEFAULT 500,
   total_cents       INTEGER NOT NULL,
@@ -88,6 +88,11 @@ CREATE TABLE IF NOT EXISTS orders (
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email TEXT;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_url TEXT;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'Cash on Delivery';
+-- 'Pending Payment' = a Wish Money order awaiting manual payment confirmation
+-- by the admin, before it becomes a normal 'Pending' order to fulfill.
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_status_check
+  CHECK (status IN ('Pending', 'Pending Payment', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'));
 
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 
@@ -157,15 +162,17 @@ CREATE TABLE IF NOT EXISTS messages (
 -- WhatsApp/Facebook/Instagram/TikTok/Email link on the site.
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS site_settings (
-  id               TEXT PRIMARY KEY DEFAULT 'main',
-  whatsapp_number  TEXT,             -- digits only, e.g. '96178901234'
-  facebook_url     TEXT,
-  instagram_url    TEXT,
-  tiktok_url       TEXT,
-  email            TEXT,             -- e.g. 'absfragrances@gmail.com'
-  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+  id                 TEXT PRIMARY KEY DEFAULT 'main',
+  whatsapp_number    TEXT,             -- digits only, e.g. '96178901234'
+  facebook_url       TEXT,
+  instagram_url      TEXT,
+  tiktok_url         TEXT,
+  email              TEXT,             -- e.g. 'absfragrances@gmail.com'
+  wish_money_number  TEXT,             -- phone number customers send Wish Money payments to
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS wish_money_number TEXT;
 INSERT INTO site_settings (id, whatsapp_number, instagram_url, tiktok_url)
   VALUES ('main', '96178901234', 'https://www.instagram.com/absfragrances?igsh=YmV2ZWRiNzRpZm5k', 'https://www.tiktok.com/@abs.fragrances?_r=1&_t=ZS-948wvGeNusK')
   ON CONFLICT (id) DO NOTHING;

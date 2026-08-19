@@ -13,6 +13,7 @@ function getBrandEmoji(id) { const m = { rasasi: '🌹', lattafa: '🔮', rueBro
 
 // Matches the backend's real order.status values exactly.
 const ORDER_STATUSES = [
+  { key: 'Pending Payment', label: 'Pending Payment', color: '#7952b3', bg: '#f3ecfb' },
   { key: 'Pending', label: 'Pending', color: '#b8860b', bg: '#fff8e1' },
   { key: 'Confirmed', label: 'Confirmed', color: '#1565c0', bg: '#e3f2fd' },
   { key: 'Shipped', label: 'Shipped', color: '#e65100', bg: '#fff3e0' },
@@ -42,7 +43,7 @@ async function loadProductsData() {
   return Object.values(PRODUCTS);
 }
 function refreshPendingBadge() {
-  const cnt = ordersCache.filter(o => o.status === 'Pending').length;
+  const cnt = ordersCache.filter(o => o.status === 'Pending' || o.status === 'Pending Payment').length;
   const b = document.getElementById('pendingBadge'); if (b) { b.textContent = cnt; b.style.display = cnt > 0 ? '' : 'none'; }
 }
 let messagesCache = [];
@@ -262,7 +263,7 @@ function renderOverview() {
   const html = `
     <div class="metrics-row">
       <div class="stat-card"><div class="stat-icon stat-icon-gold"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></div><div class="stat-val">${orders.length}</div><div class="stat-label">Total Orders</div></div>
-      <div class="stat-card"><div class="stat-icon stat-icon-red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-val">${cs('Pending')}</div><div class="stat-label">Pending</div>${cs('Pending') > 0 ? '<div class="stat-change down">⚠ Needs action</div>' : ''}</div>
+      <div class="stat-card"><div class="stat-icon stat-icon-red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-val">${cs('Pending') + cs('Pending Payment')}</div><div class="stat-label">Pending</div>${(cs('Pending') + cs('Pending Payment')) > 0 ? '<div class="stat-change down">⚠ Needs action</div>' : ''}</div>
       <div class="stat-card"><div class="stat-icon stat-icon-navy"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div class="stat-val">${cs('Confirmed') + cs('Shipped')}</div><div class="stat-label">Confirmed / Shipped</div></div>
       <div class="stat-card"><div class="stat-icon stat-icon-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val">${cs('Delivered')}</div><div class="stat-label">Delivered</div></div>
       <div class="stat-card"><div class="stat-icon stat-icon-navy"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div><div class="stat-val">${prods.length}</div><div class="stat-label">Products</div></div>
@@ -962,45 +963,42 @@ async function loadSiteSettingsData() {
   siteSettingsCache = data.settings || {};
   return siteSettingsCache;
 }
+const SC_CHANNELS = [
+  { id: 'ssgWhatsapp', field: 'whatsapp_number', icon: '💬', name: 'WhatsApp', color: '#25D366', digitsOnly: true, required: true,
+    placeholder: 'e.g. 96178901234', hint: 'Digits only, with country code. Used for every WhatsApp link and button on the site.' },
+  { id: 'ssgWishMoney', field: 'wish_money_number', icon: '💸', name: 'Wish Money', color: '#0d9488', digitsOnly: true,
+    placeholder: 'e.g. 96178901234', hint: 'Shown to customers at checkout when they choose to pay with Wish Money.' },
+  { id: 'ssgInstagram', field: 'instagram_url', icon: '📸', name: 'Instagram', color: '#C13584',
+    placeholder: 'https://instagram.com/absfragrances', hint: 'Full profile URL.' },
+  { id: 'ssgFacebook', field: 'facebook_url', icon: '📘', name: 'Facebook', color: '#1877F2',
+    placeholder: 'https://facebook.com/absfragrances', hint: 'Leave blank to hide the Facebook icon/link site-wide.' },
+  { id: 'ssgTiktok', field: 'tiktok_url', icon: '🎵', name: 'TikTok', color: '#FE2C55',
+    placeholder: 'https://www.tiktok.com/@abs.fragrances', hint: 'Leave blank to hide the TikTok icon/link site-wide.' },
+  { id: 'ssgEmail', field: 'email', icon: '✉️', name: 'Email', color: '#C4A270',
+    placeholder: 'absfragrances@gmail.com', hint: 'Leave blank to hide the email icon/link site-wide.' },
+];
 function renderSiteSettings() {
   const s = siteSettingsCache;
   document.getElementById('dashContent').innerHTML = `
-    <div class="profile-card">
-      <div class="profile-form">
-        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">WhatsApp</div>
-        <div class="form-group">
-          <label class="form-label">Business Number</label>
-          <input class="form-input" id="ssgWhatsapp" placeholder="e.g. 96178901234" value="${esc(s.whatsapp_number || '')}"/>
-          <span class="form-hint">Digits only, with country code, no + or spaces. Used for every WhatsApp link and button on the site.</span>
-        </div>
-        <div class="profile-form-divider"></div>
-        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">Social Links</div>
-        <div class="form-group">
-          <label class="form-label">Facebook URL</label>
-          <input class="form-input" id="ssgFacebook" placeholder="https://facebook.com/absfragrances" value="${esc(s.facebook_url || '')}"/>
-          <span class="form-hint">Leave blank to hide the Facebook icon/link site-wide.</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Instagram URL</label>
-          <input class="form-input" id="ssgInstagram" placeholder="https://instagram.com/absfragrances" value="${esc(s.instagram_url || '')}"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">TikTok URL</label>
-          <input class="form-input" id="ssgTiktok" placeholder="https://www.tiktok.com/@abs.fragrances" value="${esc(s.tiktok_url || '')}"/>
-          <span class="form-hint">Leave blank to hide the TikTok icon/link site-wide.</span>
-        </div>
-        <div class="profile-form-divider"></div>
-        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">Email</div>
-        <div class="form-group">
-          <label class="form-label">Gmail Address</label>
-          <input class="form-input" id="ssgEmail" placeholder="absfragrances@gmail.com" value="${esc(s.email || '')}"/>
-          <span class="form-hint">Leave blank to hide the email icon/link site-wide.</span>
-        </div>
-        <div id="ssgError" style="color:var(--danger);font-family:var(--sans);font-size:.78rem;display:none"></div>
-        <div class="profile-actions">
-          <button class="btn btn-gold" id="ssgSaveBtn" onclick="saveSiteSettingsForm()">Save Changes</button>
-        </div>
-      </div>
+    <div class="sc-grid">
+      ${SC_CHANNELS.map(ch => {
+        const val = s[ch.field] || '';
+        const isLive = !!val;
+        return `
+        <div class="sc-card" style="--sc-accent:${ch.color}">
+          <div class="sc-card-head">
+            <span class="sc-icon-circle">${ch.icon}</span>
+            <span class="sc-name">${ch.name}</span>
+            <span class="sc-status ${isLive ? 'live' : 'off'}">${isLive ? 'Live' : 'Not Set'}</span>
+          </div>
+          <input class="sc-input" id="${ch.id}" placeholder="${ch.placeholder}" value="${esc(val)}"/>
+          ${ch.hint ? `<span class="sc-hint">${ch.hint}</span>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+    <div id="ssgError" style="color:var(--danger);font-family:var(--sans);font-size:.78rem;display:none;margin-bottom:1rem"></div>
+    <div class="profile-actions">
+      <button class="btn btn-gold" id="ssgSaveBtn" onclick="saveSiteSettingsForm()">Save Changes</button>
     </div>`;
 }
 async function saveSiteSettingsForm() {
@@ -1008,20 +1006,24 @@ async function saveSiteSettingsForm() {
   const btn = document.getElementById('ssgSaveBtn');
   errEl.style.display = 'none';
 
-  const whatsapp_number = document.getElementById('ssgWhatsapp').value.trim().replace(/\D/g, '');
-  const facebook_url = document.getElementById('ssgFacebook').value.trim();
-  const instagram_url = document.getElementById('ssgInstagram').value.trim();
-  const tiktok_url = document.getElementById('ssgTiktok').value.trim();
-  const email = document.getElementById('ssgEmail').value.trim();
-
-  if (!whatsapp_number) { errEl.textContent = 'WhatsApp number is required.'; errEl.style.display = 'block'; return; }
+  const payload = {};
+  for (const ch of SC_CHANNELS) {
+    let val = document.getElementById(ch.id).value.trim();
+    if (ch.digitsOnly) val = val.replace(/\D/g, '');
+    if (ch.required && !val) {
+      errEl.textContent = `${ch.name} is required.`;
+      errEl.style.display = 'block';
+      return;
+    }
+    payload[ch.field] = val;
+  }
 
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     const res = await fetch(`${API_BASE}/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ whatsapp_number, facebook_url, instagram_url, tiktok_url, email }),
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error || 'Failed to save settings'; errEl.style.display = 'block'; return; }
