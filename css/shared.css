@@ -246,6 +246,9 @@ footer { background: var(--surface); padding: 4rem 4rem 2rem; }
 .footer-links a:hover { color: var(--gold); }
 .footer-bottom { display: flex; align-items: center; justify-content: space-between; font-family: var(--sans); font-size: .68rem; font-weight: 300; color: rgba(248,248,249,.22); letter-spacing: .06em; }
 .footer-bottom span { color: var(--gold); opacity: .55; }
+.footer-credit { text-align: center; font-family: var(--sans); font-size: .6rem; font-weight: 300; letter-spacing: .04em; color: rgba(248,248,249,.14); margin-top: .6rem; }
+.footer-credit a { color: inherit; text-decoration: none; transition: color .25s; }
+.footer-credit a:hover { color: rgba(248,248,249,.45); }
 
 /* ─── FLOATING WA ─── */
 .wa-float { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; width: 54px; height: 54px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,.4); text-decoration: none; animation: waPulse 3s ease-in-out infinite; transition: transform .3s; }
