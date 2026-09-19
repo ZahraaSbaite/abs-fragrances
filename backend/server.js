@@ -23,7 +23,14 @@ app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false 
 // site can be reachable from more than one domain during a hosting migration.
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || '*').split(',').map(o => o.trim());
 app.use(cors({ origin: allowedOrigins.includes('*') ? '*' : allowedOrigins }));
-app.use(express.json());
+
+// Body size limit. The default (100kb) was too small: product images are sent
+// as base64 inside the JSON body, which made saves fail with
+// "PayloadTooLargeError: request entity too large". 10mb allows images of
+// roughly 7MB (base64 adds ~33% overhead).
+const BODY_LIMIT = process.env.BODY_LIMIT || '10mb';
+app.use(express.json({ limit: BODY_LIMIT }));
+app.use(express.urlencoded({ extended: true, limit: BODY_LIMIT }));
 
 // Generous limit across the whole API so normal browsing is never affected,
 // just abusive/automated traffic.
@@ -53,6 +60,14 @@ app.use('/api/settings', settingsRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {
+  // Request body bigger than BODY_LIMIT (e.g. oversized image)
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request is too large. Please use a smaller image.' });
+  }
+  // Malformed JSON sent by the client
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON in request body.' });
+  }
   console.error(err);
   res.status(500).json({ error: 'Internal server error' });
 });
