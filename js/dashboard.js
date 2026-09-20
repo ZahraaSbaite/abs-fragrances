@@ -31,6 +31,31 @@ function showToast(msg, type = '') {
   setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 400); }, 3200);
 }
 
+/* ── IMAGE COMPRESSION ──
+   Photos are stored inside the product record as a data: URL, so they must be
+   small. This resizes to maxWidth and re-encodes (WebP, or JPEG where WebP
+   isn't supported). A typical bottle photo drops from hundreds of KB to ~30-80 KB.
+   keepAlpha: for logos with transparency — never falls back to JPEG. */
+function compressImage(file, maxWidth = 800, quality = 0.8, keepAlpha = false) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      let out = canvas.toDataURL('image/webp', quality);
+      if (!out.startsWith('data:image/webp') && !keepAlpha) out = canvas.toDataURL('image/jpeg', quality);
+      resolve(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read that image')); };
+    img.src = url;
+  });
+}
+
 /* ── DATA (real API, cached in memory per tab-switch) ── */
 let ordersCache = [];
 async function loadOrdersData() {
@@ -101,16 +126,20 @@ function previewPhotoUrl() {
   if (url) { img.src = url; img.style.display = 'block'; ph.style.display = 'none'; img.onerror = () => { img.style.display = 'none'; ph.style.display = 'flex'; }; }
   else { img.style.display = 'none'; ph.style.display = 'flex'; }
 }
-function handlePhotoUpload(input) {
-  // Note: this embeds the image as a data: URL string in image_url. Fine for a
-  // quick demo, but a real image-hosting/upload flow would be better long-term.
+async function handlePhotoUpload(input) {
+  // The image is compressed, then embedded as a data: URL string in image_url.
+  // (A real image host such as Cloudinary would be better long-term.)
   if (!input.files || !input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const d = e.target.result; document.getElementById('fpPhoto').value = d;
+  try {
+    const d = await compressImage(input.files[0], 800, 0.8);
+    document.getElementById('fpPhoto').value = d;
     const img = document.getElementById('photoPreviewImg');
     img.src = d; img.style.display = 'block'; document.getElementById('photoPlaceholder').style.display = 'none';
-  }; reader.readAsDataURL(input.files[0]);
+  } catch (err) {
+    showToast(err.message || 'Could not read that image', 'error');
+  } finally {
+    input.value = ''; // allow re-selecting the same file
+  }
 }
 
 /* ── PRODUCT FORM ── */
@@ -458,14 +487,19 @@ function previewBrandLogoUrl() {
   if (url) { img.src = url; img.style.display = 'block'; ph.style.display = 'none'; img.onerror = () => { img.style.display = 'none'; ph.style.display = 'flex'; }; }
   else { img.style.display = 'none'; ph.style.display = 'flex'; }
 }
-function handleBrandLogoUpload(input) {
+async function handleBrandLogoUpload(input) {
   if (!input.files || !input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const d = e.target.result; document.getElementById('bfLogoUrl').value = d;
+  try {
+    // Logos are small and may be transparent: 300px max, never fall back to JPEG.
+    const d = await compressImage(input.files[0], 300, 0.85, true);
+    document.getElementById('bfLogoUrl').value = d;
     const img = document.getElementById('brandLogoPreviewImg');
     img.src = d; img.style.display = 'block'; document.getElementById('brandLogoPlaceholder').style.display = 'none';
-  }; reader.readAsDataURL(input.files[0]);
+  } catch (err) {
+    showToast(err.message || 'Could not read that image', 'error');
+  } finally {
+    input.value = '';
+  }
 }
 
 function openBrandForm(existingId) {
@@ -668,14 +702,18 @@ function previewSignatureScentPhotoUrl() {
   if (url) { img.src = url; img.style.display = 'block'; ph.style.display = 'none'; img.onerror = () => { img.style.display = 'none'; ph.style.display = 'flex'; }; }
   else { img.style.display = 'none'; ph.style.display = 'flex'; }
 }
-function handleSignatureScentPhotoUpload(input) {
+async function handleSignatureScentPhotoUpload(input) {
   if (!input.files || !input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const d = e.target.result; document.getElementById('ssPhoto').value = d;
+  try {
+    const d = await compressImage(input.files[0], 800, 0.8);
+    document.getElementById('ssPhoto').value = d;
     const img = document.getElementById('ssPhotoPreviewImg');
     img.src = d; img.style.display = 'block'; document.getElementById('ssPhotoPlaceholder').style.display = 'none';
-  }; reader.readAsDataURL(input.files[0]);
+  } catch (err) {
+    showToast(err.message || 'Could not read that image', 'error');
+  } finally {
+    input.value = '';
+  }
 }
 
 function openSignatureScentForm() {

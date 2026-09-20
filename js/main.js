@@ -16,6 +16,16 @@ function escapeHtml(s) {
   const d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML;
 }
 
+/* ─── Escape for use inside a quoted HTML attribute (also escapes quotes) ─── */
+function escapeAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 /* ─── Get brand emoji ─── */
 function getBrandEmoji(brandId) {
   const emojis = { rasasi: '🌹', lattafa: '🔮', rueBroca: '🌿', frenchAvenue: '🗼', assaf: '🪔', afnan: '💎', rayhaan: '🌸', alHambra: '🏰', franceCollection: '⚜️' };
@@ -23,6 +33,15 @@ function getBrandEmoji(brandId) {
 }
 function getBrandName(brandId) {
   return (typeof BRANDS !== 'undefined' && BRANDS[brandId]?.name) || brandId || '—';
+}
+
+/* ─── Product visual: the real photo when the product has one, brand emoji otherwise.
+ *     If the photo fails to load, it falls back to the emoji automatically. ─── */
+function productVisualHTML(p, emojiStyle, imgStyle) {
+  const emoji = getBrandEmoji(p.brand);
+  if (!p.image) return `<div class="product-emoji" style="${emojiStyle}">${emoji}</div>`;
+  return `<img src="${escapeAttr(p.image)}" alt="${escapeAttr(p.name)}" loading="lazy" style="${imgStyle}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />`
+    + `<div class="product-emoji" style="display:none;${emojiStyle}">${emoji}</div>`;
 }
 
 /* ─── Homepage: "Our Signature Scents" (admin-curated featured perfumes) ─── */
@@ -244,12 +263,16 @@ function initReviewForm() {
 /* ─── Product card HTML (reusable) ─── */
 function productCardHTML(p) {
   const brandName = getBrandName(p.brand);
-  const emoji = getBrandEmoji(p.brand);
+  const visual = productVisualHTML(
+    p,
+    'font-size:3.5rem;filter:drop-shadow(0 6px 20px rgba(22,56,70,.15));transition:transform .4s',
+    'width:100%;height:100%;object-fit:cover'
+  );
   return `
     <div class="catalog-card fade-up" data-product="${p.id}" onclick="openProductModal('${p.id}')">
       <div class="catalog-card-img ${genderBgClass(p.gender)}">
         ${p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${p.badge}</div>` : ''}
-        <div style="font-size:3.5rem;filter:drop-shadow(0 6px 20px rgba(22,56,70,.15));transition:transform .4s">${emoji}</div>
+        ${visual}
       </div>
       <div class="catalog-card-body">
         <div class="catalog-card-brand">${escapeHtml(brandName)}</div>
@@ -284,10 +307,10 @@ function openProductModal(productId) {
   const content = document.getElementById('modalContent');
   if (!overlay || !content) return;
   const brandName = getBrandName(p.brand);
-  const emoji = getBrandEmoji(p.brand);
+  const modalVisual = productVisualHTML(p, 'font-size:4rem', 'width:100%;height:100%;object-fit:contain');
   content.innerHTML = `
-    <div style="height:160px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 -3rem 1.5rem;font-size:4rem">
-      ${emoji}
+    <div style="height:${p.image ? '280px' : '160px'};background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 -3rem 1.5rem;font-size:4rem;overflow:hidden">
+      ${modalVisual}
     </div>
     <div class="modal-collection">${escapeHtml(brandName)} — ${escapeHtml(p.gender)}</div>
     ${p.isInspired ? `<span class="inspired-tag" style="margin-bottom:.5rem">✦ Inspired By — not the original brand-name fragrance</span>` : ''}
@@ -335,7 +358,7 @@ function initNavbarSearch() {
     } else {
       dropdown.innerHTML = results.map(p => `
         <div class="search-result-item" onclick="openProductModal('${p.id}');closeSearchDropdown()">
-          <div class="search-result-thumb">${getBrandEmoji(p.brand)}</div>
+          <div class="search-result-thumb" style="overflow:hidden">${productVisualHTML(p, '', 'width:100%;height:100%;object-fit:cover')}</div>
           <div>
             <div class="search-result-name">${escapeHtml(p.name)}</div>
             <div class="search-result-brand">${escapeHtml(getBrandName(p.brand))}</div>
