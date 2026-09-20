@@ -53,7 +53,7 @@ function productVisualHTML(p, emojiStyle, imgStyle) {
  * With no more perfumes than slots there is nothing to scroll, so it stays static. */
 let _featuredList = [];
 let _featuredVisible = 0;
-const FEATURED_SECONDS_PER_CARD = 6.5; // lower = faster scroll
+const FEATURED_SECONDS_PER_CARD = 4.8; // lower = faster scroll (4.8 matches the reference video: ~0.21 cards/second)
 
 function featuredVisibleCount() {
   const grid = document.getElementById('featuredGrid');
