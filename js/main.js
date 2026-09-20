@@ -122,7 +122,7 @@ function renderFeaturedWindow() {
     // Phone: plain row of cards, swipeable, with prev/next buttons when there are more than fit.
     grid.classList.add('is-static');
     const arrow = (dir, label, points) => `<button type="button" class="featured-nav-btn" data-fm-nav="${dir}" aria-label="${label}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="${points}"/></svg></button>`;
-    grid.innerHTML = `<div class="featured-scroller">${_featuredList.map(p => featuredCardHTML(p, false)).join('')}</div>`
+    grid.innerHTML = `<div class="featured-scroller" style="display:flex;flex-wrap:nowrap;overflow-x:auto">${_featuredList.map(p => featuredCardHTML(p, false)).join('')}</div>`
       + (total > _featuredVisible
         ? `<div class="featured-nav">${arrow(-1, 'Previous perfumes', '15 18 9 12 15 6')}${arrow(1, 'Next perfumes', '9 18 15 12 9 6')}</div>`
         : '');
@@ -135,7 +135,7 @@ function renderFeaturedWindow() {
   // Duration scales with the number of cards, so the scroll speed stays the same
   // no matter how many perfumes are featured.
   const duration = animate ? ` style="animation-duration:${(total * FEATURED_SECONDS_PER_CARD).toFixed(1)}s"` : '';
-  grid.innerHTML = `<div class="featured-track"${duration}>${cards}${clones}</div>`;
+  grid.innerHTML = `<div class="featured-track" style="display:flex;flex-wrap:nowrap;width:max-content"${duration}>${cards}${clones}</div>`;
 }
 
 function renderFeaturedSection() {
