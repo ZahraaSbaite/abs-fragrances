@@ -7,19 +7,23 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <meta name="google-site-verification" content="NfrR7-2QYDrnaPrAQhuAywCxuzbIehyIFQiYvV8oops" />
   <title>Abs Fragrances — Luxury UAE Scents in Lebanon</title>
-  <meta name="description" content="Shop luxury UAE-inspired perfumes and Class A France Collection fragrances at Abs Fragrances — oud, musk, and designer-inspired scents for men, women, and unisex, delivered across Lebanon." />
-  <meta name="keywords" content="perfumes Lebanon, fragrances Lebanon, UAE perfumes, oud perfume, buy perfume online Lebanon, luxury fragrances, Abs Fragrances" />
+  <meta name="description"
+    content="Shop luxury UAE-inspired perfumes and Class A France Collection fragrances at Abs Fragrances — oud, musk, and designer-inspired scents for men, women, and unisex, delivered across Lebanon." />
+  <meta name="keywords"
+    content="perfumes Lebanon, fragrances Lebanon, UAE perfumes, oud perfume, buy perfume online Lebanon, luxury fragrances, Abs Fragrances" />
   <link rel="canonical" href="https://abs-fragrances.vercel.app/" />
   <link rel="icon" type="image/png" href="images/logo.png" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Abs Fragrances" />
   <meta property="og:title" content="Abs Fragrances — Luxury UAE Scents in Lebanon" />
-  <meta property="og:description" content="Shop luxury UAE-inspired perfumes and Class A France Collection fragrances, delivered across Lebanon." />
+  <meta property="og:description"
+    content="Shop luxury UAE-inspired perfumes and Class A France Collection fragrances, delivered across Lebanon." />
   <meta property="og:url" content="https://abs-fragrances.vercel.app/" />
   <meta property="og:image" content="https://abs-fragrances.vercel.app/images/logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Abs Fragrances — Luxury UAE Scents in Lebanon" />
-  <meta name="twitter:description" content="Shop luxury UAE-inspired perfumes and Class A France Collection fragrances, delivered across Lebanon." />
+  <meta name="twitter:description"
+    content="Shop luxury UAE-inspired perfumes and Class A France Collection fragrances, delivered across Lebanon." />
   <meta name="twitter:image" content="https://abs-fragrances.vercel.app/images/logo.png" />
   <script type="application/ld+json">
   {
@@ -39,6 +43,266 @@
     rel="stylesheet" />
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/landing.css" />
+  <!-- Styling for the "Our Signature Scents" row lives here on purpose, so it never depends on a cached stylesheet. -->
+  <style id="featured-marquee-css">
+    /* ─── FEATURED MARQUEE — "Our Signature Scents" ───
+     Continuous right-to-left scroll. --fm-visible is how many cards show at once
+     (3 desktop / 2 tablet / 1 phone, matching the old grid breakpoints); main.js
+     reads it too, so change it here only. */
+    .featured-marquee {
+      --fm-visible: 3;
+      --fm-gap: 2rem;
+      /* How far the moving row extends past the 3-card area on each side, so cards slide
+       in from / out through the screen edge (no fade). It equals the page margin, capped
+       so very wide screens don't show extra cards. */
+      --fm-bleed: min(14rem, max(0px, calc((100vw - 100%) / 2)));
+      flex: 1;
+      min-width: 0;
+      container-type: inline-size;
+      overflow: hidden;
+      /* the side padding is the bleed area; the vertical padding leaves room for the hover
+       lift, scale and shadow. The negative margin cancels both so the layout is unchanged */
+      padding: 1.5rem var(--fm-bleed) 2rem;
+      margin: -1.5rem calc(-1 * var(--fm-bleed)) -2rem;
+    }
+
+    /* Not enough perfumes to scroll: plain static row, exactly like before. */
+    .featured-marquee.is-static {
+      overflow: visible;
+      padding-inline: 0;
+      margin-inline: 0;
+    }
+
+    .featured-marquee .featured-empty {
+      grid-column: auto;
+    }
+
+    .featured-track {
+      display: flex;
+      width: max-content;
+      will-change: transform;
+      animation: featuredScroll 40s linear infinite;
+    }
+
+    .featured-marquee.is-static .featured-track {
+      animation: none;
+      will-change: auto;
+    }
+
+    /* Track = the list twice; sliding by -50% is exactly one list, so the loop is seamless. */
+    @keyframes featuredScroll {
+      from {
+        transform: translate3d(0, 0, 0);
+      }
+
+      to {
+        transform: translate3d(-50%, 0, 0);
+      }
+    }
+
+    .featured-track .product-card {
+      flex: 0 0 auto;
+      margin-right: var(--fm-gap);
+      width: 320px;
+      /* fallback for browsers without container units */
+      width: calc((100cqw - (var(--fm-visible) - 1) * var(--fm-gap)) / var(--fm-visible));
+    }
+
+    /* Every card the same height, price + buttons pinned to the bottom. Descriptions are cut
+       to 2 lines and may break anywhere, so a long one (even pasted with no normal spaces)
+       can never spill out of its card or push it wider. */
+    .featured-track .product-card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .featured-track .product-img-wrap {
+      flex-shrink: 0;
+    }
+
+    .featured-track .product-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .featured-track .product-desc {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+    }
+
+    .featured-track .product-footer {
+      margin-top: auto;
+    }
+
+    /* Pause + gentle enlarge on hover (mouse devices); keyboard focus also pauses. */
+    @media (hover:hover) and (pointer:fine) {
+      .featured-track:hover {
+        animation-play-state: paused;
+      }
+
+      .featured-track .product-card:hover {
+        transform: translateY(-6px) scale(1.04);
+        z-index: 2;
+      }
+    }
+
+    .featured-track:focus-within,
+    .featured-marquee.is-touch-paused .featured-track {
+      animation-play-state: paused;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .featured-marquee:not(.is-static) {
+        overflow-x: auto;
+      }
+
+      .featured-track {
+        animation: none;
+      }
+
+      .featured-track .is-clone {
+        display: none;
+      }
+    }
+
+    /* ─── PHONE: 3 compact cards side by side, swipe or use the buttons ───
+     (main.js switches to this manual mode at <=768px.) Cards show image, name and price;
+     tapping one opens the full details / Add to Cart as usual. */
+    .featured-scroller {
+      display: flex;
+      gap: var(--fm-gap);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: .6rem 0 1rem;
+    }
+
+    .featured-scroller::-webkit-scrollbar {
+      display: none;
+    }
+
+    .featured-scroller .product-card {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      width: calc((100% - (var(--fm-visible) - 1) * var(--fm-gap)) / var(--fm-visible));
+    }
+
+    .featured-scroller .product-img-wrap {
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
+
+    .featured-scroller .product-emoji {
+      font-size: 2.4rem !important;
+    }
+
+    .featured-scroller .product-badge {
+      top: .4rem;
+      right: .4rem;
+      font-size: .42rem;
+      padding: .2rem .35rem;
+      letter-spacing: .08em;
+    }
+
+    .featured-scroller .product-info {
+      padding: .75rem .5rem .9rem;
+      text-align: center;
+    }
+
+    .featured-scroller .product-collection,
+    .featured-scroller .inspired-tag,
+    .featured-scroller .product-desc,
+    .featured-scroller .btn-view-det,
+    .featured-scroller .btn-add-cart {
+      display: none;
+    }
+
+    .featured-scroller .product-name {
+      font-size: .85rem;
+      line-height: 1.25;
+      margin-bottom: .35rem;
+      min-height: 2.5em;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .featured-scroller .product-footer {
+      justify-content: center;
+    }
+
+    .featured-scroller .product-price {
+      font-size: .9rem;
+    }
+
+    .featured-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: .4rem;
+    }
+
+    .featured-nav-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(var(--ink-rgb), .18);
+      background: var(--white);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .25s;
+    }
+
+    .featured-nav-btn:hover,
+    .featured-nav-btn:active {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* Stops the edge-to-edge row from ever causing a sideways page scrollbar. */
+    .featured {
+      overflow-x: hidden;
+      overflow-x: clip;
+    }
+
+    /* Safety net: if an older main.js puts the cards straight into the row, keep them side by side. */
+    .featured-marquee:has(> .product-card) {
+      display: flex;
+      gap: var(--fm-gap);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .featured-marquee>.product-card {
+      flex: 0 0 auto;
+      width: calc((100cqw - (var(--fm-visible) - 1) * var(--fm-gap)) / var(--fm-visible));
+    }
+
+    /* Tablet: 2 across. Phone: 3 compact cards across (manual mode). */
+    @media (max-width:1024px) {
+      .featured-marquee {
+        --fm-visible: 2;
+      }
+    }
+
+    @media (max-width:768px) {
+      .featured-marquee {
+        --fm-visible: 3;
+        --fm-gap: .75rem;
+      }
+    }
+  </style>
   <link rel="stylesheet" href="css/pages.css" />
 </head>
 
@@ -200,13 +464,7 @@
     <p class="section-sub fade-up delay-2">Handpicked from the finest UAE perfumers — each bottle a story of
       craftsmanship and desire.</p>
     <div class="featured-carousel fade-up">
-      <button type="button" class="review-arrow review-arrow-prev" id="featuredPrevBtn" aria-label="Previous perfumes">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6" /></svg>
-      </button>
-      <div class="products-grid" id="featuredGrid"></div>
-      <button type="button" class="review-arrow review-arrow-next" id="featuredNextBtn" aria-label="Next perfumes">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6" /></svg>
-      </button>
+      <div class="featured-marquee" id="featuredGrid"></div>
     </div>
     <div style="text-align:center;margin-top:3rem">
       <a href="all-perfumes.html" class="btn btn-outline btn-navy" style="background:var(--navy);color:var(--bg)">View
@@ -283,22 +541,36 @@
     <h2 class="section-title fade-up delay-1">The Difference Is in the Details</h2>
     <div class="values-grid">
       <div class="value-item fade-up delay-1">
-        <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" /></svg></div>
+        <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.3">
+            <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />
+          </svg></div>
         <h3 class="value-title">UAE Origin</h3>
         <p class="value-text">Every fragrance is sourced directly from the UAE's leading perfume houses.</p>
       </div>
       <div class="value-item fade-up delay-2">
-        <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 2l2.9 6 6.6.6-5 4.4 1.5 6.5L12 16l-5.9 3.5L7.6 13l-5-4.4 6.6-.6L12 2z" /></svg></div>
+        <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.3">
+            <path d="M12 2l2.9 6 6.6.6-5 4.4 1.5 6.5L12 16l-5.9 3.5L7.6 13l-5-4.4 6.6-.6L12 2z" />
+          </svg></div>
         <h3 class="value-title">Premium Quality</h3>
         <p class="value-text">No dilution, no imitation — only original concentrations at full strength.</p>
       </div>
       <div class="value-item fade-up delay-3">
-        <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg></div>
+        <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.3">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3.5 2" />
+          </svg></div>
         <h3 class="value-title">Long-Lasting Scents</h3>
         <p class="value-text">Curated for projection and longevity that carries through the day.</p>
       </div>
       <div class="value-item fade-up delay-1">
-        <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 19V5a2 2 0 012-2h11.5L21 6.5V19a2 2 0 01-2 2H6a2 2 0 01-2-2z" /><path d="M8 7h8M8 11h8M8 15h5" /></svg></div>
+        <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.3">
+            <path d="M4 19V5a2 2 0 012-2h11.5L21 6.5V19a2 2 0 01-2 2H6a2 2 0 01-2-2z" />
+            <path d="M8 7h8M8 11h8M8 15h5" />
+          </svg></div>
         <h3 class="value-title">Curated Selection</h3>
         <p class="value-text">A hand-picked catalog, not a warehouse dump — every bottle earns its place.</p>
       </div>
@@ -312,11 +584,15 @@
     <p class="section-sub fade-up delay-2">Real people. Real scents. Real impressions.</p>
     <div class="reviews-carousel fade-up">
       <button type="button" class="review-arrow review-arrow-prev" id="reviewPrevBtn" aria-label="Previous reviews">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6" /></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
       </button>
       <div class="reviews-grid" id="reviewsGrid"></div>
       <button type="button" class="review-arrow review-arrow-next" id="reviewNextBtn" aria-label="Next reviews">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6" /></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
       </button>
     </div>
 
@@ -361,10 +637,12 @@
             <div class="review-form-col">
               <div class="review-form-field review-form-field-grow">
                 <label class="review-form-label">Your Review</label>
-                <textarea name="review_text" placeholder="Tell us about your experience…" maxlength="1000" required></textarea>
+                <textarea name="review_text" placeholder="Tell us about your experience…" maxlength="1000"
+                  required></textarea>
               </div>
               <div id="reviewFormError" class="review-form-error" style="display:none"></div>
-              <button type="submit" class="btn btn-gold" id="reviewSubmitBtn" style="justify-content:center">Submit Review</button>
+              <button type="submit" class="btn btn-gold" id="reviewSubmitBtn" style="justify-content:center">Submit
+                Review</button>
             </div>
           </div>
         </form>
@@ -380,7 +658,8 @@
       We'll guide you to your perfect fragrance and arrange delivery across Lebanon.</p>
     <div class="dm-actions fade-up delay-3">
       <a href="all-perfumes.html" class="btn btn-gold">Order now</a>
-      <a href="contact.html" class="btn btn-outline" style="color:var(--paper);border-color:rgba(248,248,249,0.3)">Contact
+      <a href="contact.html" class="btn btn-outline"
+        style="color:var(--paper);border-color:rgba(248,248,249,0.3)">Contact
         Us</a>
     </div>
   </section>
@@ -392,27 +671,30 @@
         <div class="footer-brand-name">Abs<span>.</span> Fragrances</div>
         <p class="footer-tagline">"Pure Scents, Pure You."<br />Luxury fragrances from the UAE, now in Lebanon.</p>
         <div class="footer-social">
-          <a href="#" target="_blank" class="social-btn" data-fb-link style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M22 12a10 10 0 10-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-3.99 3.87-3.99 1.12 0 2.3.2 2.3.2v2.53h-1.3c-1.28 0-1.68.8-1.68 1.62V12h2.86l-.46 2.89h-2.4v6.98A10 10 0 0022 12z" />
+          <a href="#" target="_blank" class="social-btn" data-fb-link style="display:none"><svg width="14" height="14"
+              viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M22 12a10 10 0 10-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-3.99 3.87-3.99 1.12 0 2.3.2 2.3.2v2.53h-1.3c-1.28 0-1.68.8-1.68 1.62V12h2.86l-.46 2.89h-2.4v6.98A10 10 0 0022 12z" />
             </svg></a>
-          <a href="https://www.instagram.com/absfragrances?igsh=YmV2ZWRiNzRpZm5k" target="_blank"
-            class="social-btn" data-ig-link><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          <a href="https://www.instagram.com/absfragrances?igsh=YmV2ZWRiNzRpZm5k" target="_blank" class="social-btn"
+            data-ig-link><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="1.5">
               <rect x="2" y="2" width="20" height="20" rx="5" />
               <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
               <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
             </svg></a>
-          <a href="https://wa.me/96178901234" target="_blank" class="social-btn" data-wa-link><svg width="14" height="14"
-              viewBox="0 0 24 24" fill="currentColor">
+          <a href="https://wa.me/96178901234" target="_blank" class="social-btn" data-wa-link><svg width="14"
+              height="14" viewBox="0 0 24 24" fill="currentColor">
               <path
                 d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
             </svg></a>
-          <a href="https://www.tiktok.com/@abs.fragrances?_r=1&_t=ZS-948wvGeNusK" target="_blank"
-            class="social-btn" data-tiktok-link><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <a href="https://www.tiktok.com/@abs.fragrances?_r=1&_t=ZS-948wvGeNusK" target="_blank" class="social-btn"
+            data-tiktok-link><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <path
                 d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.17 8.17 0 004.78 1.52V6.82a4.85 4.85 0 01-1.01-.13z" />
             </svg></a>
-          <a href="#" class="social-btn" data-email-link style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <a href="#" class="social-btn" data-email-link style="display:none"><svg width="14" height="14"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <rect x="2" y="4" width="20" height="16" rx="2" />
               <path d="M2 7l10 6 10-6" />
             </svg></a>
@@ -443,7 +725,8 @@
       <div>© 2025 Abs Fragrances · Lebanon. <span>Original UAE imports.</span></div>
       <div>Crafted for <span>pure luxury</span></div>
     </div>
-    <div class="footer-credit">Website by <a href="https://www.instagram.com/dev_oratech?igsh=MWluNHBzN2RiNGc1cA==" target="_blank" rel="noopener">DevoraTech</a></div>
+    <div class="footer-credit">Website by <a href="https://www.instagram.com/dev_oratech?igsh=MWluNHBzN2RiNGc1cA=="
+        target="_blank" rel="noopener">DevoraTech</a></div>
   </footer>
 
   <script src="js/config.js"></script>
@@ -453,7 +736,7 @@
   <script src="js/cart.js"></script>
   <script src="js/orders.js"></script>
   <script src="js/reviews.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/main.js?v=20260920"></script>
 </body>
 
-</html>
+</html>s

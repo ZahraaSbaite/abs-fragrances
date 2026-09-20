@@ -9,8 +9,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Jost:wght@300;400;500&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="../css/shared.css" />
-  <link rel="stylesheet" href="../css/dashboard.css" />
+  <link rel="stylesheet" href="../css/shared.css?v=20260920" />
+  <link rel="stylesheet" href="../css/dashboard.css?v=20260920" />
   <style>
     .status-pipeline {
       display: flex;
@@ -625,8 +625,8 @@
           </label>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Logo (emoji fallback)</label><input class="form-input" id="bfLogo"
-          placeholder="e.g. 🕌" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Logo (emoji fallback)</label><input class="form-input"
+          id="bfLogo" placeholder="e.g. 🕌" maxlength="4" /></div>
       <div id="bfError"
         style="color:var(--danger);font-family:var(--sans);font-size:.78rem;margin-bottom:1rem;display:none"></div>
       <div style="display:flex;gap:1rem;margin-top:.5rem">
@@ -833,7 +833,8 @@
         <button class="sidebar-link" data-view="siteSettings">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+            <path
+              d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
           </svg>Social &amp; Contact
         </button>
         <div class="sidebar-section-label">Store</div>
@@ -887,7 +888,7 @@
       for (const src of ['../js/products.js', '../js/orders.js', '../js/reviews.js', '../js/messages.js', '../js/dashboard.js']) {
         await new Promise((resolve, reject) => {
           const s = document.createElement('script');
-          s.src = src;
+          s.src = src + '?v=20260920'; // version tag: forces browsers to fetch the latest files
           s.onload = resolve;
           s.onerror = reject;
           document.body.appendChild(s);

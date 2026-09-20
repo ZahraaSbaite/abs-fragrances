@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { pool } = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
@@ -138,11 +137,19 @@ router.put('/:id/status', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// DELETE /api/orders/:id — admin only
+// DELETE /api/orders/:id — admin only. Only finished orders (Delivered or
+// Cancelled) can be deleted; anything still in the pipeline is protected.
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const result = await pool.query('DELETE FROM orders WHERE id = $1 RETURNING id', [req.params.id]);
-    if (!result.rows[0]) return res.status(404).json({ error: 'Order not found' });
+    const result = await pool.query(
+      `DELETE FROM orders WHERE id = $1 AND status IN ('Delivered', 'Cancelled') RETURNING id`,
+      [req.params.id]
+    );
+    if (!result.rows[0]) {
+      const exists = await pool.query('SELECT status FROM orders WHERE id = $1', [req.params.id]);
+      if (!exists.rows[0]) return res.status(404).json({ error: 'Order not found' });
+      return res.status(409).json({ error: 'Only Delivered or Cancelled orders can be deleted' });
+    }
     res.json({ deleted: req.params.id });
   } catch (err) {
     console.error(err);

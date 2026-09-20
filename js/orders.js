@@ -39,6 +39,15 @@ const Orders = (() => {
     if (!res.ok) throw new Error(data.error || 'Failed to update status');
     return data.order;
   }
+  async function deleteOrder(id, token) {
+    const res = await fetch(`${API_BASE}/orders/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Failed to delete order');
+    return data.deleted;
+  }
   function statusColor(status) {
     return { Pending: '#e8b84b', Confirmed: '#2a7ae4', Shipped: '#7952b3', Delivered: '#28a745', Cancelled: '#dc3545' }[status] || '#888';
   }
@@ -46,7 +55,7 @@ const Orders = (() => {
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
-  return { placeGuestOrder, fetchAll, fetchOne, updateStatus, statusColor, formatDate };
+  return { placeGuestOrder, fetchAll, fetchOne, updateStatus, deleteOrder, statusColor, formatDate };
 })();
 window.Orders = Orders;
 
