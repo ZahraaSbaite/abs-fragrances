@@ -44,10 +44,22 @@ function productVisualHTML(p, emojiStyle, imgStyle) {
     + `<div class="product-emoji" style="display:none;${emojiStyle}">${emoji}</div>`;
 }
 
-/* ─── Homepage: "Our Signature Scents" (admin-curated featured perfumes) ─── */
+/* ─── Homepage: "Our Signature Scents" (admin-curated featured perfumes) ───
+ * A continuous right-to-left marquee. Only a few cards are visible at once
+ * (3 desktop / 2 tablet / 1 phone — the number lives in css/landing.css as
+ * --fm-visible; this code reads it). When there are more featured perfumes than
+ * visible slots the list is rendered twice back-to-back and the track slides
+ * left by exactly one list-width, so the loop restarts with no visible jump.
+ * With no more perfumes than slots there is nothing to scroll, so it stays static. */
 let _featuredList = [];
-let _featuredStart = 0;
-const FEATURED_VISIBLE = 3;
+let _featuredVisible = 0;
+const FEATURED_SECONDS_PER_CARD = 6.5; // lower = faster scroll
+
+function featuredVisibleCount() {
+  const grid = document.getElementById('featuredGrid');
+  const n = grid ? parseInt(getComputedStyle(grid).getPropertyValue('--fm-visible'), 10) : NaN;
+  return n > 0 ? n : 3;
+}
 
 function featuredBgClass(p) {
   if (p.badge === 'Bestseller') return 'type-bestseller-bg';
@@ -55,14 +67,17 @@ function featuredBgClass(p) {
   return genderBgClass(p.gender);
 }
 
-function featuredCardHTML(p) {
+// isClone: the second copy of the list used for the seamless loop — hidden from
+// screen readers and keyboard tabbing (the first copy is the real one).
+function featuredCardHTML(p, isClone) {
   const brandName = getBrandName(p.brand);
   const emoji = getBrandEmoji(p.brand);
   const visual = p.image
     ? `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" style="width:100%;height:100%;object-fit:cover" />`
     : `<div class="product-emoji" style="font-size:3.8rem;filter:drop-shadow(0 6px 20px rgba(22,56,70,.15))">${emoji}</div>`;
+  const tab = isClone ? ' tabindex="-1"' : '';
   return `
-    <div class="product-card fade-up" data-product="${p.id}" onclick="openProductModal('${p.id}')">
+    <div class="product-card${isClone ? ' is-clone' : ''}"${isClone ? ' aria-hidden="true"' : ''} data-product="${p.id}" onclick="openProductModal('${p.id}')">
       <div class="product-img-wrap ${featuredBgClass(p)}">
         ${p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${escapeHtml(p.badge)}</div>` : ''}
         ${visual}
@@ -74,8 +89,8 @@ function featuredCardHTML(p) {
         <p class="product-desc">${escapeHtml(p.shortDesc || '')}</p>
         <div class="product-footer">
           <div class="product-price">${p.price}</div>
-          <button class="btn-view-det" onclick="event.stopPropagation();openProductModal('${p.id}')">Details</button>
-          <button class="btn-add-cart" onclick="event.stopPropagation();addToCart('${p.id}')">
+          <button class="btn-view-det"${tab} onclick="event.stopPropagation();openProductModal('${p.id}')">Details</button>
+          <button class="btn-add-cart"${tab} onclick="event.stopPropagation();addToCart('${p.id}')">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             Add
           </button>
@@ -88,44 +103,50 @@ function renderFeaturedWindow() {
   const grid = document.getElementById('featuredGrid');
   if (!grid) return;
   const total = _featuredList.length;
+  _featuredVisible = featuredVisibleCount();
   if (!total) {
+    grid.classList.add('is-static');
     grid.innerHTML = `<div class="featured-empty">New arrivals coming soon.</div>`;
-    document.getElementById('featuredPrevBtn')?.classList.add('is-hidden');
-    document.getElementById('featuredNextBtn')?.classList.add('is-hidden');
     return;
   }
-  const visible = total <= FEATURED_VISIBLE
-    ? _featuredList
-    : Array.from({ length: FEATURED_VISIBLE }, (_, i) => _featuredList[(_featuredStart + i) % total]);
-
-  grid.innerHTML = visible.map(featuredCardHTML).join('');
-  grid.querySelectorAll('.fade-up').forEach(el => { el.classList.add('visible'); window.fadeUpObserver?.observe(el); });
-
-  const arrows = total > FEATURED_VISIBLE;
-  document.getElementById('featuredPrevBtn')?.classList.toggle('is-hidden', !arrows);
-  document.getElementById('featuredNextBtn')?.classList.toggle('is-hidden', !arrows);
+  const animate = total > _featuredVisible;
+  grid.classList.toggle('is-static', !animate);
+  const cards = _featuredList.map(p => featuredCardHTML(p, false)).join('');
+  const clones = animate ? _featuredList.map(p => featuredCardHTML(p, true)).join('') : '';
+  // Duration scales with the number of cards, so the scroll speed stays the same
+  // no matter how many perfumes are featured.
+  const duration = animate ? ` style="animation-duration:${(total * FEATURED_SECONDS_PER_CARD).toFixed(1)}s"` : '';
+  grid.innerHTML = `<div class="featured-track"${duration}>${cards}${clones}</div>`;
 }
 
 function renderFeaturedSection() {
   if (!document.getElementById('featuredGrid')) return;
   _featuredList = Object.values(PRODUCTS).filter(p => p.isFeatured);
-  _featuredStart = 0;
   renderFeaturedWindow();
 }
 
-function initFeaturedCarousel() {
-  document.getElementById('featuredPrevBtn')?.addEventListener('click', () => {
-    const total = _featuredList.length;
-    if (!total) return;
-    _featuredStart = (_featuredStart - 1 + total) % total;
-    renderFeaturedWindow();
-  });
-  document.getElementById('featuredNextBtn')?.addEventListener('click', () => {
-    const total = _featuredList.length;
-    if (!total) return;
-    _featuredStart = (_featuredStart + 1) % total;
-    renderFeaturedWindow();
-  });
+function initFeaturedMarquee() {
+  const grid = document.getElementById('featuredGrid');
+  if (!grid) return;
+
+  // Re-render only when the breakpoint changes how many cards are visible.
+  // Width-only check: mobile browsers fire resize when the address bar hides,
+  // and that must not restart the animation.
+  let lastWidth = window.innerWidth;
+  window.addEventListener('resize', () => {
+    if (window.innerWidth === lastWidth) return;
+    lastWidth = window.innerWidth;
+    if (featuredVisibleCount() !== _featuredVisible) renderFeaturedWindow();
+  }, { passive: true });
+
+  // Touch screens have no hover: pause while a finger is on the marquee so a
+  // moving card can be tapped, and resume shortly after it lifts.
+  let resumeTimer;
+  const pause = () => { clearTimeout(resumeTimer); grid.classList.add('is-touch-paused'); };
+  const resume = () => { clearTimeout(resumeTimer); resumeTimer = setTimeout(() => grid.classList.remove('is-touch-paused'), 1800); };
+  grid.addEventListener('touchstart', pause, { passive: true });
+  grid.addEventListener('touchend', resume, { passive: true });
+  grid.addEventListener('touchcancel', resume, { passive: true });
 }
 
 /* ─── Homepage: Customer reviews ─── */
@@ -452,7 +473,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.fadeUpObserver = observer; // so content rendered later (e.g. reviews) can opt in too
 
   renderFeaturedSection();
-  initFeaturedCarousel();
+  initFeaturedMarquee();
   renderReviewsSection();
   initReviewForm();
   initReviewsCarousel();

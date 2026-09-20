@@ -107,7 +107,15 @@ async function setOrderStatus(id, ns) {
     renderOrders();
   } catch (err) { showToast(err.message || 'Failed to update status', 'error'); }
 }
+// Only finished orders can be deleted: Delivered or Cancelled.
+const DELETABLE_ORDER_STATUSES = ['Delivered', 'Cancelled'];
+function canDeleteOrder(o) { return !!o && DELETABLE_ORDER_STATUSES.includes(o.status); }
 function deleteOrder(id) {
+  const order = ordersCache.find(o => o.id === id);
+  if (!canDeleteOrder(order)) {
+    showToast('Only Delivered or Cancelled orders can be deleted.', 'error');
+    return;
+  }
   confirm2('Delete Order?', 'Order ' + id + ' will be permanently removed.', async () => {
     try {
       await Orders.deleteOrder(id, getToken());
@@ -357,7 +365,7 @@ function renderOrderRows(orders) {
       <a href="https://wa.me/${(o.customer_phone || '').replace(/\D/g, '')}" target="_blank" class="btn btn-wa btn-sm btn-icon" title="WhatsApp">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       </a>
-      <button class="btn btn-danger btn-sm btn-icon" onclick="deleteOrder('${o.id}')" title="Delete">
+      <button class="btn btn-danger btn-sm btn-icon" ${canDeleteOrder(o) ? `onclick="deleteOrder('${o.id}')" title="Delete order"` : 'disabled title="Only Delivered or Cancelled orders can be deleted"'}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
       </button>
     </td>
@@ -376,9 +384,24 @@ function applyOrderSearch() {
 }
 
 /* ── MANAGE PERFUMES ── */
+// Filter state lives outside the DOM so re-rendering the view (e.g. after clicking a
+// gender chip) never loses the active gender / brand / search filters.
 let prodGenderFilter = '';
+let prodBrandFilterVal = '';
+let prodSearchVal = '';
+function getFilteredProducts() {
+  const q = prodSearchVal.toLowerCase().trim();
+  const g = prodGenderFilter.toLowerCase();
+  return Object.values(PRODUCTS).filter(p => {
+    const mG = !g || (p.gender || '').toLowerCase() === g;
+    const mB = !prodBrandFilterVal || p.brand === prodBrandFilterVal;
+    const mQ = !q || (p.name || '').toLowerCase().includes(q) || getBrandName(p.brand).toLowerCase().includes(q);
+    return mG && mB && mQ;
+  });
+}
+function prodCountLabel(n) { return n + ' perfume' + (n !== 1 ? 's' : ''); }
 function renderProducts() {
-  const prods = Object.values(PRODUCTS);
+  const prods = getFilteredProducts();
   const html = `
     <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05);margin-bottom:0">
       <div class="admin-filter-bar">
@@ -388,13 +411,13 @@ function renderProducts() {
         <div style="display:flex;gap:.7rem;align-items:center;flex:1;justify-content:flex-end;flex-wrap:wrap">
           <select id="prodBrandFilter" onchange="applyProdSearch()" style="font-family:var(--sans);font-size:.72rem;padding:.45rem .7rem;border:1px solid rgba(22,56,70,.18);background:var(--white);color:var(--navy);outline:none;cursor:pointer">
             <option value="">All Brands</option>
-            ${Object.values(BRANDS).map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('')}
+            ${Object.values(BRANDS).map(b => `<option value="${b.id}" ${prodBrandFilterVal === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
           </select>
           <div class="search-input-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input class="search-input" id="prodSearch" placeholder="Search perfumes…" oninput="applyProdSearch()"/>
+            <input class="search-input" id="prodSearch" placeholder="Search perfumes…" value="${esc(prodSearchVal)}" oninput="applyProdSearch()"/>
           </div>
           <button class="btn btn-gold btn-sm" onclick="openProductForm()">+ Add New</button>
-          <span id="prodCount" style="font-family:var(--sans);font-size:.72rem;color:var(--muted);white-space:nowrap">${prods.length} perfumes</span>
+          <span id="prodCount" style="font-family:var(--sans);font-size:.72rem;color:var(--muted);white-space:nowrap">${prodCountLabel(prods.length)}</span>
         </div>
       </div>
       <table class="data-table">
@@ -431,16 +454,13 @@ function renderProdRows(prods) {
   }).join('');
 }
 function applyProdSearch() {
-  const q = (document.getElementById('prodSearch')?.value || '').toLowerCase().trim();
-  const b = document.getElementById('prodBrandFilter')?.value || '';
-  const rows = document.querySelectorAll('#prodTbody tr[data-name]'); let shown = 0;
-  rows.forEach(row => {
-    const mQ = !q || row.dataset.name.includes(q) || getBrandName(row.dataset.brand).toLowerCase().includes(q);
-    const mG = !prodGenderFilter || row.dataset.gender === prodGenderFilter;
-    const mB = !b || row.dataset.brand === b;
-    row.style.display = (mQ && mG && mB) ? '' : 'none'; if (mQ && mG && mB) shown++;
-  });
-  const el = document.getElementById('prodCount'); if (el) el.textContent = shown + ' perfumes';
+  // Text search + brand dropdown update the state, then only the rows are redrawn
+  // (not the whole view) so the search box keeps focus while typing.
+  prodSearchVal = document.getElementById('prodSearch')?.value || '';
+  prodBrandFilterVal = document.getElementById('prodBrandFilter')?.value || '';
+  const prods = getFilteredProducts();
+  const tbody = document.getElementById('prodTbody'); if (tbody) tbody.innerHTML = renderProdRows(prods);
+  const el = document.getElementById('prodCount'); if (el) el.textContent = prodCountLabel(prods.length);
 }
 
 /* ── MANAGE BRANDS ── */
@@ -1084,7 +1104,7 @@ async function switchView(view) {
   currentView = view;
   document.querySelectorAll('.sidebar-link[data-view]').forEach(l => l.classList.toggle('active', l.dataset.view === view));
   document.getElementById('topbarTitle').textContent = VIEW_TITLES[view] || view;
-  orderFilterStatus = ''; prodGenderFilter = '';
+  orderFilterStatus = ''; prodGenderFilter = ''; prodBrandFilterVal = ''; prodSearchVal = '';
   // Immediate feedback — matters most when the backend is slow to wake up (Render free tier).
   if (view !== 'profile') {
     document.getElementById('dashContent').innerHTML = '<div style="padding:4rem;text-align:center;color:var(--muted);font-family:var(--sans);font-size:.85rem">Loading…</div>';
