@@ -110,6 +110,18 @@ async function setOrderStatus(id, ns) {
 // Only finished orders can be deleted: Delivered or Cancelled.
 const DELETABLE_ORDER_STATUSES = ['Delivered', 'Cancelled'];
 function canDeleteOrder(o) { return !!o && DELETABLE_ORDER_STATUSES.includes(o.status); }
+
+// Talks to the API directly, so deleting never depends on another script file being up to date.
+async function deleteOrderRequest(id) {
+  const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to delete order');
+  return id;
+}
+
 function deleteOrder(id) {
   const order = ordersCache.find(o => o.id === id);
   if (!canDeleteOrder(order)) {
@@ -118,12 +130,44 @@ function deleteOrder(id) {
   }
   confirm2('Delete Order?', 'Order ' + id + ' will be permanently removed.', async () => {
     try {
-      await Orders.deleteOrder(id, getToken());
+      await deleteOrderRequest(id);
       showToast('Order deleted');
       await loadOrdersData();
       renderOrders();
     } catch (err) { showToast(err.message || 'Failed to delete order', 'error'); }
   });
+}
+
+/* "Clear" menu on the Orders page: remove every Cancelled, or every Delivered, order at once. */
+function toggleClearMenu(e) {
+  if (e) e.stopPropagation();
+  const m = document.getElementById('clearOrdersMenu');
+  if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+function closeClearMenu() {
+  const m = document.getElementById('clearOrdersMenu');
+  if (m) m.style.display = 'none';
+}
+document.addEventListener('click', closeClearMenu);
+
+function clearOrdersByStatus(status) {
+  closeClearMenu();
+  if (!DELETABLE_ORDER_STATUSES.includes(status)) return;
+  const label = status.toLowerCase();
+  const targets = ordersCache.filter(o => o.status === status);
+  if (!targets.length) { showToast('There are no ' + label + ' orders to clear.'); return; }
+  const n = targets.length;
+  confirm2('Clear ' + label + ' orders?',
+    n + ' ' + label + ' order' + (n !== 1 ? 's' : '') + ' will be permanently removed. This cannot be undone.',
+    async () => {
+      const results = await Promise.allSettled(targets.map(o => deleteOrderRequest(o.id)));
+      const ok = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.length - ok;
+      if (failed) showToast(ok + ' cleared, ' + failed + ' failed', 'error');
+      else showToast(ok + ' ' + label + ' order' + (ok !== 1 ? 's' : '') + ' cleared', 'success');
+      try { await loadOrdersData(); } catch (err) { /* keep the current list if the refresh fails */ }
+      renderOrders();
+    });
 }
 
 /* ── PHOTO (image_url field on the product) ── */
@@ -341,6 +385,14 @@ function renderOrders() {
       <div class="search-input-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input class="search-input" id="orderSearchInput" placeholder="Search by order ID or customer…" oninput="applyOrderSearch()"/></div>
       <span id="orderCount" class="catalog-count">${orders.length} orders</span>
+      <div style="position:relative;margin-left:.8rem">
+        <button class="btn btn-outline btn-sm" onclick="toggleClearMenu(event)" title="Clear finished orders">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Clear ▾
+        </button>
+        <div id="clearOrdersMenu" onclick="event.stopPropagation()" style="display:none;position:absolute;right:0;top:calc(100% + 6px);min-width:260px;background:var(--white);box-shadow:0 10px 34px rgba(22,56,70,.2);z-index:30;padding:.4rem">
+          ${['Cancelled', 'Delivered'].map(st => { const n = cs(st); return `<button ${n ? '' : 'disabled'} onclick="clearOrdersByStatus('${st}')" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;width:100%;padding:.75rem .9rem;background:none;border:0;text-align:left;font-family:var(--sans);font-size:.75rem;color:var(--navy);cursor:${n ? 'pointer' : 'not-allowed'};opacity:${n ? 1 : .4}" onmouseover="if(!this.disabled)this.style.background='rgba(22,56,70,.06)'" onmouseout="this.style.background='none'"><span>Clear ${st.toLowerCase()} orders</span><span style="color:var(--muted)">${n}</span></button>`; }).join('')}
+        </div>
+      </div>
     </div>
     <div class="table-card">
       <table class="data-table">
@@ -365,7 +417,7 @@ function renderOrderRows(orders) {
       <a href="https://wa.me/${(o.customer_phone || '').replace(/\D/g, '')}" target="_blank" class="btn btn-wa btn-sm btn-icon" title="WhatsApp">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       </a>
-      <button class="btn btn-danger btn-sm btn-icon" ${canDeleteOrder(o) ? `onclick="deleteOrder('${o.id}')" title="Delete order"` : 'disabled title="Only Delivered or Cancelled orders can be deleted"'}>
+      <button class="btn btn-danger btn-sm btn-icon" ${canDeleteOrder(o) ? `onclick="deleteOrder('${o.id}')" title="Delete order"` : 'disabled style="opacity:.3;cursor:not-allowed" title="Only Delivered or Cancelled orders can be deleted"'}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
       </button>
     </td>

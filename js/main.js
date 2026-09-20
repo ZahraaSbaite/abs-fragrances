@@ -50,15 +50,22 @@ function productVisualHTML(p, emojiStyle, imgStyle) {
  * --fm-visible; this code reads it). When there are more featured perfumes than
  * visible slots the list is rendered twice back-to-back and the track slides
  * left by exactly one list-width, so the loop restarts with no visible jump.
- * With no more perfumes than slots there is nothing to scroll, so it stays static. */
+ * With no more perfumes than slots there is nothing to scroll, so it stays static.
+ * PHONES (<=768px) use a manual mode instead: 3 compact cards side by side that can be
+ * swiped or stepped through with the prev/next buttons (wraps around at the ends). */
 let _featuredList = [];
 let _featuredVisible = 0;
+let _featuredMode = '';
 const FEATURED_SECONDS_PER_CARD = 4.8; // lower = faster scroll (4.8 matches the reference video: ~0.21 cards/second)
 
 function featuredVisibleCount() {
   const grid = document.getElementById('featuredGrid');
   const n = grid ? parseInt(getComputedStyle(grid).getPropertyValue('--fm-visible'), 10) : NaN;
   return n > 0 ? n : 3;
+}
+
+function featuredMode() {
+  return window.matchMedia('(max-width: 768px)').matches ? 'manual' : 'marquee';
 }
 
 function featuredBgClass(p) {
@@ -104,9 +111,21 @@ function renderFeaturedWindow() {
   if (!grid) return;
   const total = _featuredList.length;
   _featuredVisible = featuredVisibleCount();
+  _featuredMode = featuredMode();
+  grid.classList.toggle('is-manual', _featuredMode === 'manual' && total > 0);
   if (!total) {
     grid.classList.add('is-static');
     grid.innerHTML = `<div class="featured-empty">New arrivals coming soon.</div>`;
+    return;
+  }
+  if (_featuredMode === 'manual') {
+    // Phone: plain row of cards, swipeable, with prev/next buttons when there are more than fit.
+    grid.classList.add('is-static');
+    const arrow = (dir, label, points) => `<button type="button" class="featured-nav-btn" data-fm-nav="${dir}" aria-label="${label}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="${points}"/></svg></button>`;
+    grid.innerHTML = `<div class="featured-scroller">${_featuredList.map(p => featuredCardHTML(p, false)).join('')}</div>`
+      + (total > _featuredVisible
+        ? `<div class="featured-nav">${arrow(-1, 'Previous perfumes', '15 18 9 12 15 6')}${arrow(1, 'Next perfumes', '9 18 15 12 9 6')}</div>`
+        : '');
     return;
   }
   const animate = total > _featuredVisible;
@@ -136,8 +155,23 @@ function initFeaturedMarquee() {
   window.addEventListener('resize', () => {
     if (window.innerWidth === lastWidth) return;
     lastWidth = window.innerWidth;
-    if (featuredVisibleCount() !== _featuredVisible) renderFeaturedWindow();
+    if (featuredMode() !== _featuredMode || featuredVisibleCount() !== _featuredVisible) renderFeaturedWindow();
   }, { passive: true });
+
+  // Phone mode: prev/next buttons step the row by one card, wrapping around at the ends.
+  grid.addEventListener('click', e => {
+    const btn = e.target.closest('[data-fm-nav]');
+    const sc = grid.querySelector('.featured-scroller');
+    const card = sc && sc.querySelector('.product-card');
+    if (!btn || !card) return;
+    const step = card.getBoundingClientRect().width + (parseFloat(getComputedStyle(sc).columnGap) || 0);
+    const dir = Number(btn.dataset.fmNav);
+    const max = sc.scrollWidth - sc.clientWidth;
+    let target = sc.scrollLeft + dir * step;
+    if (dir > 0 && sc.scrollLeft >= max - 2) target = 0;
+    else if (dir < 0 && sc.scrollLeft <= 2) target = max;
+    sc.scrollTo({ left: target, behavior: 'smooth' });
+  });
 
   // Touch screens have no hover: pause while a finger is on the marquee so a
   // moving card can be tapped, and resume shortly after it lifts.
