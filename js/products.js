@@ -6,15 +6,18 @@ let PRODUCTS = {};
 let BUNDLES = [];
 let _productsPromise = null;
 
-// GET an API path as JSON. Each attempt is cut off after `timeout` ms and retried, so a
-// hung request can't leave the page loading forever — while a sleeping server still gets
-// ~a minute in total to wake up.
-async function fetchJson(path, { timeout = 20000, retries = 2 } = {}) {
+// GET an API path as JSON. If the server doesn't start answering within `timeout` ms the
+// attempt is cut off and retried (a sleeping server gets ~a minute in total to wake up).
+// Once it has answered, the body gets up to `bodyTimeout` ms — a big response on a slow
+// connection must be allowed to finish, not be cut off and retried from scratch.
+async function fetchJson(path, { timeout = 20000, bodyTimeout = 120000, retries = 2 } = {}) {
   for (let attempt = 0; ; attempt++) {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeout);
+    let timer = setTimeout(() => ctrl.abort(), timeout);
     try {
       const r = await fetch(`${API_BASE}${path}`, { signal: ctrl.signal });
+      clearTimeout(timer);
+      timer = setTimeout(() => ctrl.abort(), bodyTimeout);
       if (!r.ok) throw new Error(`${path} → ${r.status}`);
       return await r.json();
     } catch (err) {
