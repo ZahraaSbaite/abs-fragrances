@@ -164,7 +164,7 @@
         <button class="filter-chip" data-gender="Women">Women</button>
         <button class="filter-chip" data-gender="Unisex">Unisex</button>
         <button class="filter-chip" data-gender="Musk">Musk</button>
-        <button class="filter-chip filter-chip-sale" data-gender="Sale">Sale</button>
+        <button class="filter-chip filter-chip-sale" data-gender="Sale" style="display:none">Sale</button>
       </div>
       <div class="catalog-bar-right">
         <select class="sort-select" id="brandFilter" onchange="applyFilters()">
@@ -293,8 +293,13 @@
       await initProducts();
       const params = new URLSearchParams(window.location.search);
       const qParam = params.get('q');
-      const gParam = params.get('gender');
+      let gParam = params.get('gender');
       const bParam = params.get('brand');
+
+      // Sale chip only shows while at least one perfume is on sale.
+      const hasSale = Object.values(getAllProductsCatalog()).some(p => p.onSale);
+      document.querySelector('.filter-chip-sale').style.display = hasSale ? '' : 'none';
+      if (gParam === 'Sale' && !hasSale) gParam = null;
 
       if (qParam) { document.getElementById('catalogSearch').value = qParam; }
       if (gParam) { activeGender = gParam; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.gender === gParam)); }

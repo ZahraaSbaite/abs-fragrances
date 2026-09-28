@@ -30,6 +30,9 @@
     .sl-item { display:flex; align-items:center; gap:.7rem; background:var(--white); padding:.45rem .7rem; border:1px solid rgba(22,56,70,.1); font-family:var(--sans); font-size:.82rem; }
     .sl-item span:first-child { flex:1; }
     .sl-qty { width:60px; padding:.3rem .4rem; border:1px solid rgba(22,56,70,.18); }
+    .sl-photo { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+    .sl-photo-prev { width:200px; height:120px; background:var(--white); border:1px dashed rgba(22,56,70,.2); display:flex; align-items:center; justify-content:center; text-align:center; padding:.4rem; overflow:hidden; }
+    .sl-photo-prev img { width:100%; height:100%; object-fit:cover; }
     @media (max-width:700px){ .sl-form{grid-template-columns:1fr;} }`;
   document.head.appendChild(st);
 })();
@@ -258,7 +261,16 @@ function slFormRender() {
     <div><label>Bundle name</label><input class="form-input" value="${esc(f.name)}" oninput="SL.form.name=this.value" placeholder="e.g. Gift set for him" /></div>
     <div><label>Bundle price ($)</label><input class="form-input" type="number" min="0" step="0.01" value="${esc(f.price)}" oninput="SL.form.price=this.value;slSummary()" /></div>
     <div class="full"><label>Description (optional)</label><input class="form-input" value="${esc(f.description)}" oninput="SL.form.description=this.value" /></div>
-    <div class="full"><label>Image URL (optional)</label><input class="form-input" value="${esc(f.image_url)}" oninput="SL.form.image_url=this.value" placeholder="https://…" /></div>
+    <div class="full">
+      <label>Bundle photo (shown on the right of the offer)</label>
+      <div class="sl-photo">
+        <div class="sl-photo-prev">${f.image_url ? `<img src="${esc(f.image_url)}" alt="">` : '<span class="sl-sub">No photo — the perfumes’ photos are used</span>'}</div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <label class="btn btn-outline btn-sm" style="margin:0;cursor:pointer;text-transform:none;letter-spacing:0">${f.image_url ? 'Change photo' : 'Upload photo'}<input type="file" accept="image/*" hidden onchange="slBundlePhoto(this)" /></label>
+          ${f.image_url ? '<button class="btn btn-danger btn-sm" onclick="SL.form.image_url=\'\';slFormRender()">Remove</button>' : ''}
+        </div>
+      </div>
+    </div>
     <div class="full">
       <label>Perfumes in this bundle</label>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap">
@@ -285,6 +297,15 @@ function slSummary() {
   const regular = SL.form.items.reduce((s, i) => s + (PRODUCTS[i.product_id]?.priceCents || 0) * i.quantity, 0);
   const price = slCents(SL.form.price);
   el.textContent = `Regular total ${formatPrice(regular)}` + (price != null ? ` · customer saves ${formatPrice(Math.max(0, regular - price))}` : '');
+}
+
+async function slBundlePhoto(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  try {
+    SL.form.image_url = await compressImage(file, 1200, 0.82);
+    slFormRender();
+  } catch (err) { showToast(err.message || 'Could not read that image', 'error'); }
 }
 
 function slAddItem() {
