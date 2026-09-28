@@ -58,22 +58,22 @@
 }
 
 .hero-logo-ring-outer {
-  width: 300px;
-  height: 300px;
+  width: calc(var(--logo-size) * 1.15);
+  height: calc(var(--logo-size) * 1.15);
   animation: pulseOrb 4s ease-in-out infinite;
 }
 
 .hero-logo-ring-inner {
-  width: 220px;
-  height: 220px;
+  width: calc(var(--logo-size) * .85);
+  height: calc(var(--logo-size) * .85);
   border-color: rgba(196, 162, 112, .4);
   animation: pulseOrb 4s ease-in-out infinite;
   animation-delay: .5s;
 }
 
 .hero-logo-img {
-  width: 260px;
-  height: 260px;
+  width: var(--logo-size);
+  height: var(--logo-size);
   border-radius: 50%;
   object-fit: cover;
   display: block;
@@ -240,18 +240,21 @@
 
 /* Hero visual */
 .hero-visual {
+  /* --logo-size drives the logo and all its rings, so the whole mark grows to fill the column */
+  --logo-size: clamp(220px, min(36vw, 68vh), 760px);
   position: relative;
   z-index: 2;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 520px;
+  align-self: stretch;
+  min-height: calc(var(--logo-size) * 1.35);
 }
 
 .hero-bottle-wrap {
   position: relative;
-  width: 280px;
-  height: 420px;
+  width: 100%;
+  height: calc(var(--logo-size) * 1.35);
 }
 
 .hero-orb {
@@ -314,8 +317,8 @@
   bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
-  height: 100px;
+  width: calc(var(--logo-size) * .75);
+  height: calc(var(--logo-size) * .38);
   background: radial-gradient(ellipse, rgba(196, 162, 112, .15) 0%, transparent 70%);
   filter: blur(15px);
   animation: smokeRise 4s ease-in-out infinite;
@@ -500,8 +503,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 340px;
-  height: 340px;
+  width: calc(var(--logo-size) * 1.3);
+  height: calc(var(--logo-size) * 1.3);
   pointer-events: none;
   animation: ringSpin 44s linear infinite;
 }
@@ -715,7 +718,7 @@
   font-family: var(--serif2);
   font-size: 1.1rem;
   color: var(--ink);
-  font-style: italic;
+  font-style: normal;
 }
 
 .btn-add-cart {
@@ -1295,7 +1298,7 @@
   font-family: var(--serif2);
   font-size: .95rem;
   color: var(--muted);
-  font-style: italic;
+  font-style: normal;
 }
 
 .cart-item-qty {
@@ -1374,7 +1377,7 @@
   font-family: var(--serif2);
   font-size: 1.3rem;
   color: var(--ink);
-  font-style: italic;
+  font-style: normal;
 }
 
 /* ─── CHECKOUT FORM (inside cart drawer) ─── */
@@ -1634,7 +1637,8 @@
   }
 
   .hero-visual {
-    height: 350px;
+    --logo-size: clamp(200px, 52vw, 460px);
+    align-self: auto;
   }
 
   .products-grid {
@@ -1779,22 +1783,22 @@
 }
 
 .hero-logo-ring-outer {
-  width: 300px;
-  height: 300px;
+  width: calc(var(--logo-size) * 1.15);
+  height: calc(var(--logo-size) * 1.15);
   animation: pulseOrb 4s ease-in-out infinite;
 }
 
 .hero-logo-ring-inner {
-  width: 220px;
-  height: 220px;
+  width: calc(var(--logo-size) * .85);
+  height: calc(var(--logo-size) * .85);
   border-color: rgba(196, 162, 112, .4);
   animation: pulseOrb 4s ease-in-out infinite;
   animation-delay: .5s;
 }
 
 .hero-logo-img {
-  width: 260px;
-  height: 260px;
+  width: var(--logo-size);
+  height: var(--logo-size);
   border-radius: 50%;
   object-fit: cover;
   display: block;

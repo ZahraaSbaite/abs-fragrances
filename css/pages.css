@@ -320,3 +320,20 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
   .brands-grid { grid-template-columns:repeat(2,1fr); }
   .catalog-grid { grid-template-columns:1fr; }
 }
+
+
+/* ─── SALES & BUNDLES ─── */
+.price-old { text-decoration: line-through; color: var(--muted); font-size: .85em; margin-right: .5rem; font-style: normal; }
+.price-now { font-style: normal; }
+.badge-sale { background: #b3372f !important; color: #fff !important; }
+.filter-chip-sale { color: #b3372f; }
+.filter-chip-sale.active { background: #b3372f; border-color: #b3372f; color: #fff; }
+.bundles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.8rem; max-width: 1200px; margin: 0 auto; }
+.bundle-card { position: relative; display: flex; flex-direction: column; background: var(--white); border: 1px solid rgba(196,162,112,.35); overflow: hidden; }
+.bundle-save { position: absolute; top: .8rem; left: .8rem; z-index: 2; background: #b3372f; color: #fff; font-family: var(--sans); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; padding: .3rem .6rem; }
+.bundle-img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
+.bundle-body { display: flex; flex-direction: column; flex: 1; padding: 1.4rem; gap: .6rem; }
+.bundle-name { font-family: var(--serif); font-size: 1.35rem; color: var(--ink); margin: 0; }
+.bundle-desc { font-family: var(--sans); font-size: .85rem; color: var(--muted); margin: 0; }
+.bundle-items { margin: 0; padding-left: 1.1rem; font-family: var(--sans); font-size: .85rem; color: var(--ink); }
+.bundle-footer { margin-top: auto; padding-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: .8rem; }

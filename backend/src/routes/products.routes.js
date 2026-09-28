@@ -149,7 +149,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 // PUT /api/products/:id — admin only (partial update)
 router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
   const fields = ['name', 'brand_id', 'gender', 'notes', 'short_desc', 'full_desc',
-    'badge', 'badge_class', 'price_cents', 'intensity', 'in_stock', 'image_url', 'is_featured', 'is_inspired'];
+    'badge', 'badge_class', 'price_cents', 'sale_price_cents', 'intensity', 'in_stock', 'image_url', 'is_featured', 'is_inspired'];
   const updates = [];
   const params = [];
 

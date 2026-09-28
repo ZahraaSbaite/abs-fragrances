@@ -83,6 +83,19 @@
       color: var(--gold);
     }
   </style>
+  <style>
+    .cat-search { position: relative; max-width: 480px; margin: 0 0 1.6rem; }
+    .cat-search svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .cat-search input {
+      width: 100%; padding: .85rem 1rem .85rem 2.8rem; box-sizing: border-box;
+      border: 1px solid rgba(var(--ink-rgb), .18); background: var(--white); color: var(--ink);
+      font-family: var(--sans); font-size: .9rem; outline: none;
+      transition: border-color .25s, box-shadow .25s;
+    }
+    .cat-search input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(196,162,112,.12); }
+    .cat-results-title { font-family: var(--sans); font-size: .8rem; color: var(--muted); margin: 2rem 0 1.2rem; }
+    .cat-empty { text-align: center; padding: 3rem; color: var(--muted); font-family: var(--sans); grid-column: 1/-1; }
+  </style>
 </head>
 
 <body>
@@ -153,14 +166,7 @@
     </form>
     <a href="index.html">Home</a><a href="about.html">About Us</a><a href="all-perfumes.html">All Perfumes</a><a
       href="categories.html">Categories</a><a href="contact.html">Contact Us</a>
-    <div class="mobile-nav-divider"></div>
-    <form class="mobile-nav-admin" id="mobileNavAdminForm">
-      <label class="mobile-nav-admin-label">Admin</label>
-      <input type="password" id="mobileNavAdminPassword" placeholder="Password" autocomplete="current-password" />
-      <div class="mobile-nav-admin-err" id="mobileNavAdminErr"></div>
-      <button type="submit" class="mobile-nav-admin-btn">Log In</button>
-    </form>
-  </div>
+</div>
 
   <div class="page-hero">
     <div class="page-hero-content">
@@ -172,6 +178,12 @@
 
   <section class="categories-section">
 
+    <!-- CATEGORY SEARCH -->
+    <div class="cat-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="catSearch" placeholder="Search brands or perfumes in this category…" autocomplete="off" aria-label="Search in category" />
+    </div>
+
     <!-- GENDER TABS -->
     <div class="gender-tabs" id="genderTabs">
       <div class="gender-tab active" data-gender="Men">Men</div>
@@ -182,6 +194,12 @@
 
     <!-- BRAND GRID -->
     <div id="brandGrid" class="brands-grid"></div>
+
+    <!-- SEARCH RESULTS (perfumes matching the query) -->
+    <div id="catSearchResults" style="display:none">
+      <div class="cat-results-title" id="catResultsTitle"></div>
+      <div class="catalog-grid" id="catResultsGrid"></div>
+    </div>
 
     <!-- PERFUMES for selected brand -->
     <div id="perfumesSection" style="display:none">
@@ -283,11 +301,42 @@
         : '';
     }
 
+    let searchQuery = '';
+    const norm = t => String(t || '').toLowerCase().trim();
+
+    function matchingProducts() {
+      const q = norm(searchQuery);
+      return Object.values(getAllProductsCatalog()).filter(p =>
+        p.gender === currentGender &&
+        (!currentBrand || p.brand === currentBrand) &&
+        (norm(p.name).includes(q) || norm(getBrandName(p.brand)).includes(q)));
+    }
+
+    // Live search: filters brands, and lists perfumes (across brands of this category) that match.
+    function applySearch() {
+      const q = norm(searchQuery);
+      const box = document.getElementById('catSearchResults');
+      if (currentBrand) {            // inside a brand: filter that brand's perfumes
+        showBrandPerfumes(currentBrand);
+        return;
+      }
+      renderBrands();
+      if (!q) { box.style.display = 'none'; return; }
+      const list = matchingProducts();
+      box.style.display = 'block';
+      document.getElementById('catResultsTitle').textContent =
+        `${list.length} ${currentGender} perfume${list.length !== 1 ? 's' : ''} matching “${searchQuery.trim()}”`;
+      const grid = document.getElementById('catResultsGrid');
+      grid.innerHTML = list.length ? list.map(p => productCardHTML(p)).join('') : '<div class="cat-empty">No perfumes found.</div>';
+      setTimeout(() => grid.querySelectorAll('.catalog-card').forEach(c => c.classList.add('visible')), 50);
+    }
+
     function renderBrands() {
-      const brands = getBrandsForGender(currentGender);
+      const q = norm(searchQuery);
+      const brands = getBrandsForGender(currentGender).filter(b => !q || norm(b.name).includes(q));
       const grid = document.getElementById('brandGrid');
       if (!brands.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted);font-family:var(--sans);">No brands for this category yet.</div>`;
+        grid.innerHTML = `<div class="cat-empty">${q ? 'No brands match your search.' : 'No brands for this category yet.'}</div>`;
         return;
       }
       grid.innerHTML = brands.map(b => `
@@ -301,9 +350,10 @@
     function showBrandPerfumes(brandId) {
       currentBrand = brandId;
       const brand = BRANDS[brandId];
-      const products = Object.values(getAllProductsCatalog()).filter(p => p.brand === brandId && p.gender === currentGender);
+      const products = matchingProducts();
 
       document.getElementById('brandGrid').style.display = 'none';
+      document.getElementById('catSearchResults').style.display = 'none';
       document.getElementById('perfumesSection').style.display = 'block';
 
       document.getElementById('brandHeader').innerHTML = `
@@ -326,6 +376,7 @@
       currentBrand = null;
       document.getElementById('brandGrid').style.display = 'grid';
       document.getElementById('perfumesSection').style.display = 'none';
+      applySearch();
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -349,12 +400,12 @@
           tab.classList.add('active');
           currentGender = tab.dataset.gender;
           showBrands();
-          renderBrands();
         });
       });
 
       document.getElementById('productModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
       document.getElementById('cartDrawerBg')?.addEventListener('click', closeCart);
+      document.getElementById('catSearch')?.addEventListener('input', e => { searchQuery = e.target.value; applySearch(); });
       initNavbarSearch();
       updateNavbarAuth();
       updateCartBadge();

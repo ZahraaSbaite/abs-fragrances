@@ -82,14 +82,7 @@
     </form>
     <a href="index.html">Home</a><a href="about.html">About Us</a><a href="all-perfumes.html">All Perfumes</a><a
       href="categories.html">Categories</a><a href="contact.html">Contact Us</a>
-    <div class="mobile-nav-divider"></div>
-    <form class="mobile-nav-admin" id="mobileNavAdminForm">
-      <label class="mobile-nav-admin-label">Admin</label>
-      <input type="password" id="mobileNavAdminPassword" placeholder="Password" autocomplete="current-password" />
-      <div class="mobile-nav-admin-err" id="mobileNavAdminErr"></div>
-      <button type="submit" class="mobile-nav-admin-btn">Log In</button>
-    </form>
-  </div>
+</div>
 
   <div class="page-hero">
     <div class="page-hero-content">
@@ -268,7 +261,7 @@
           <li><a href="#" target="_blank" data-fb-link style="display:none">Facebook</a></li>
           <li><a href="#" data-email-link style="display:none">Email</a></li>
           <li><a href="contact.html">Contact Form</a></li>
-          <li><a href="admin/dashboard.html">Admin</a></li>
+          
         </ul>
       </div>
     </div>
@@ -303,29 +296,6 @@
         e.preventDefault();
         const q = document.getElementById('mobileNavSearchInput')?.value.trim();
         if (q) window.location.href = 'all-perfumes.html?q=' + encodeURIComponent(q);
-      });
-      const adminForm = document.getElementById('mobileNavAdminForm');
-      adminForm?.addEventListener('submit', async e => {
-        e.preventDefault();
-        const pwInput = document.getElementById('mobileNavAdminPassword');
-        const errEl = document.getElementById('mobileNavAdminErr');
-        const btn = adminForm.querySelector('.mobile-nav-admin-btn');
-        const password = pwInput.value;
-        if (!password) return;
-        errEl.classList.remove('show');
-        btn.disabled = true;
-        btn.textContent = 'Checking…';
-        const result = await login(ADMIN_EMAIL, password);
-        if (!result.ok) {
-          errEl.textContent = result.error;
-          errEl.classList.add('show');
-          pwInput.value = '';
-          pwInput.focus();
-          btn.disabled = false;
-          btn.textContent = 'Log In';
-          return;
-        }
-        window.location.href = 'admin/dashboard.html';
       });
       const obs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } }); }, { threshold: .1 });
       document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));

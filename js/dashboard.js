@@ -1150,7 +1150,7 @@ async function saveSiteSettingsForm() {
 /* ── VIEW ROUTER ── */
 let currentView = 'overview';
 let viewToken = 0; // bumped on every switchView call; a stale (superseded) call's render is dropped
-const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile', siteSettings: 'Social & Contact' };
+const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', sales: 'Sales & Bundles', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile', siteSettings: 'Social & Contact' };
 async function switchView(view) {
   const myToken = ++viewToken;
   currentView = view;
@@ -1168,6 +1168,7 @@ async function switchView(view) {
   else if (view === 'addProduct') { await loadProductsData(); if (myToken !== viewToken) return; openProductForm(); switchView('products'); return; }
   else if (view === 'brands') { await loadProductsData(); if (myToken !== viewToken) return; renderBrands(); }
   else if (view === 'signatureScents') { await loadProductsData(); if (myToken !== viewToken) return; renderSignatureScents(); }
+  else if (view === 'sales') { await loadProductsData(); if (myToken !== viewToken) return; await renderSalesView(); }
   else if (view === 'reviews') { await loadReviewsData(); if (myToken !== viewToken) return; renderReviews(); }
   else if (view === 'messages') { await loadMessagesData(); if (myToken !== viewToken) return; renderMessages(); }
   else if (view === 'profile') { renderProfile(); }

@@ -128,14 +128,7 @@
     </form>
     <a href="index.html">Home</a><a href="about.html">About Us</a><a href="all-perfumes.html">All Perfumes</a><a
       href="categories.html">Categories</a><a href="contact.html">Contact Us</a>
-    <div class="mobile-nav-divider"></div>
-    <form class="mobile-nav-admin" id="mobileNavAdminForm">
-      <label class="mobile-nav-admin-label">Admin</label>
-      <input type="password" id="mobileNavAdminPassword" placeholder="Password" autocomplete="current-password" />
-      <div class="mobile-nav-admin-err" id="mobileNavAdminErr"></div>
-      <button type="submit" class="mobile-nav-admin-btn">Log In</button>
-    </form>
-  </div>
+</div>
 
   <!-- PAGE HERO -->
   <div class="page-hero">
@@ -166,6 +159,7 @@
         <button class="filter-chip" data-gender="Women">Women</button>
         <button class="filter-chip" data-gender="Unisex">Unisex</button>
         <button class="filter-chip" data-gender="Musk">Musk</button>
+        <button class="filter-chip filter-chip-sale" data-gender="Sale">Sale</button>
       </div>
       <div class="catalog-bar-right">
         <select class="sort-select" id="brandFilter" onchange="applyFilters()">
@@ -264,7 +258,7 @@
       const all = Object.values(getAllProductsCatalog());
 
       const results = all.filter(p => {
-        const gMatch = !activeGender || p.gender === activeGender;
+        const gMatch = !activeGender || (activeGender === 'Sale' ? p.onSale : p.gender === activeGender);
         const bMatch = !brand || p.brand === brand;
         const qMatch = !q || p.name.toLowerCase().includes(q) ||
           (BRANDS[p.brand]?.name || '').toLowerCase().includes(q) ||

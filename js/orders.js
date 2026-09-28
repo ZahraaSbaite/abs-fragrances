@@ -9,7 +9,8 @@ const Orders = (() => {
         customer_name, customer_phone, customer_email: customer_email || '', customer_address,
         location_url: location_url || '', payment_method: payment_method || 'Cash on Delivery',
         note: note || '',
-        items: cart.map(i => ({ product_id: i.id, quantity: i.qty })),
+        items: cart.filter(i => !i.bundle).map(i => ({ product_id: i.id, quantity: i.qty })),
+        bundles: cart.filter(i => i.bundle).map(i => ({ bundle_id: i.id, quantity: i.qty })),
       }),
     });
     const data = await res.json();

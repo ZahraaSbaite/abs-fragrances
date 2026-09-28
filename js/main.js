@@ -86,7 +86,7 @@ function featuredCardHTML(p, isClone) {
   return `
     <div class="product-card${isClone ? ' is-clone' : ''}"${isClone ? ' aria-hidden="true"' : ''} data-product="${p.id}" onclick="openProductModal('${p.id}')">
       <div class="product-img-wrap ${featuredBgClass(p)}">
-        ${p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${escapeHtml(p.badge)}</div>` : ''}
+        ${p.onSale ? `<div class="product-badge badge-sale">Sale</div>` : (p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${escapeHtml(p.badge)}</div>` : '')}
         ${visual}
       </div>
       <div class="product-info">
@@ -95,7 +95,7 @@ function featuredCardHTML(p, isClone) {
         <h3 class="product-name">${escapeHtml(p.name)}</h3>
         <p class="product-desc">${escapeHtml(p.shortDesc || '')}</p>
         <div class="product-footer">
-          <div class="product-price">${p.price}</div>
+          <div class="product-price">${priceHTML(p)}</div>
           <button class="btn-view-det"${tab} onclick="event.stopPropagation();openProductModal('${p.id}')">Details</button>
           <button class="btn-add-cart"${tab} onclick="event.stopPropagation();addToCart('${p.id}')">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -326,7 +326,7 @@ function productCardHTML(p) {
   return `
     <div class="catalog-card fade-up" data-product="${p.id}" onclick="openProductModal('${p.id}')">
       <div class="catalog-card-img ${genderBgClass(p.gender)}">
-        ${p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${p.badge}</div>` : ''}
+        ${p.onSale ? `<div class="product-badge badge-sale">Sale</div>` : (p.badge ? `<div class="product-badge ${p.badgeClass || ''}">${p.badge}</div>` : '')}
         ${visual}
       </div>
       <div class="catalog-card-body">
@@ -336,7 +336,7 @@ function productCardHTML(p) {
         <div class="catalog-card-gender">${p.gender} · ${p.intensity || 'Moderate'}</div>
         <div class="catalog-card-notes">${(p.notes || []).slice(0, 3).map(n => `<span class="catalog-note">${escapeHtml(n)}</span>`).join('')}</div>
         <div class="catalog-card-footer">
-<span class="product-price" style="font-family:var(--serif2);font-style:italic;color:var(--navy)">${p.price}</span>
+<span class="product-price" style="font-family:var(--serif2);font-style:normal;color:var(--navy)">${priceHTML(p)}</span>
           <div style="display:flex;gap:.5rem">
             <button class="btn-add-cart" onclick="event.stopPropagation();addToCart('${p.id}')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -370,7 +370,7 @@ function openProductModal(productId) {
     <div class="modal-collection">${escapeHtml(brandName)} — ${escapeHtml(p.gender)}</div>
     ${p.isInspired ? `<span class="inspired-tag" style="margin-bottom:.5rem">✦ Inspired By — not the original brand-name fragrance</span>` : ''}
     <div class="modal-product-name">${escapeHtml(p.name)}</div>
-<div style="font-family:var(--serif2);font-style:italic;font-size:1.1rem;color:var(--gold);margin-bottom:.5rem">${p.price}</div>
+<div style="font-family:var(--serif2);font-style:normal;font-size:1.1rem;color:var(--gold);margin-bottom:.5rem">${priceHTML(p)}</div>
       ${p.badge ? `<span class="badge ${p.badgeClass || 'badge-muted'}">${p.badge}</span>` : ''}
       <span style="font-family:var(--sans);font-size:.65rem;padding:.25rem .65rem;background:rgba(22,56,70,.06);color:var(--muted)">${p.intensity || 'Moderate'}</span>
     </div>
@@ -440,37 +440,40 @@ function closeSearchDropdown() {
   document.getElementById('searchDropdown')?.classList.remove('show');
 }
 
-/* ─── Admin login from the mobile drawer ─── */
-function initMobileNavAdminForm() {
-  const form = document.getElementById('mobileNavAdminForm');
-  form?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const pwInput = document.getElementById('mobileNavAdminPassword');
-    const errEl = document.getElementById('mobileNavAdminErr');
-    const btn = form.querySelector('.mobile-nav-admin-btn');
-    const password = pwInput.value;
-    if (!password) return;
-    errEl.classList.remove('show');
-    btn.disabled = true;
-    btn.textContent = 'Checking…';
-    const result = await login(ADMIN_EMAIL, password);
-    if (!result.ok) {
-      errEl.textContent = result.error;
-      errEl.classList.add('show');
-      pwInput.value = '';
-      pwInput.focus();
-      btn.disabled = false;
-      btn.textContent = 'Log In';
-      return;
-    }
-    window.location.href = 'admin/dashboard.html';
-  });
+/* ─── Bundle offers (home page) ─── */
+function renderBundles() {
+  const sec = document.getElementById('bundles');
+  const grid = document.getElementById('bundlesGrid');
+  if (!sec || !grid) return;
+  const list = typeof getBundles === 'function' ? getBundles() : [];
+  if (!list.length) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  grid.innerHTML = list.map(b => {
+    const regular = b.items.reduce((s, i) => s + i.price_cents * i.quantity, 0);
+    const save = regular - b.price_cents;
+    const img = b.image_url ? `<img class="bundle-img" src="${escapeHtml(b.image_url)}" alt="${escapeHtml(b.name)}" />` : '';
+    return `
+    <article class="bundle-card">
+      ${save > 0 ? `<div class="bundle-save">Save ${formatPrice(save)}</div>` : ''}
+      ${img}
+      <div class="bundle-body">
+        <h3 class="bundle-name">${escapeHtml(b.name)}</h3>
+        ${b.description ? `<p class="bundle-desc">${escapeHtml(b.description)}</p>` : ''}
+        <ul class="bundle-items">${b.items.map(i => `<li>${i.quantity > 1 ? i.quantity + ' × ' : ''}${escapeHtml(i.name)}</li>`).join('')}</ul>
+        <div class="bundle-footer">
+          <div class="product-price">${save > 0 ? `<span class="price-old">${formatPrice(regular)}</span>` : ''}<span class="price-now">${formatPrice(b.price_cents)}</span></div>
+          <button class="btn-add-cart" onclick="addBundleToCart('${b.id}')">Add bundle</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
 }
 
 /* ─── Init (landing page) ─── */
 document.addEventListener('DOMContentLoaded', async () => {
   await initProducts();
   updateNavbarAuth();
+  renderBundles();
 
   if (typeof updateCartBadge === 'function') updateCartBadge();
 
@@ -497,8 +500,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const q = document.getElementById('mobileNavSearchInput')?.value.trim();
     if (q) window.location.href = 'all-perfumes.html?q=' + encodeURIComponent(q);
   });
-  initMobileNavAdminForm();
-
   // Scroll animations
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });

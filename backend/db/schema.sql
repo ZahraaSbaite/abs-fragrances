@@ -176,3 +176,29 @@ ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS wish_money_number TEXT;
 INSERT INTO site_settings (id, whatsapp_number, instagram_url, tiktok_url)
   VALUES ('main', '96178901234', 'https://www.instagram.com/absfragrances?igsh=YmV2ZWRiNzRpZm5k', 'https://www.tiktok.com/@abs.fragrances?_r=1&_t=ZS-948wvGeNusK')
   ON CONFLICT (id) DO NOTHING;
+
+
+-- ─────────────────────────────────────────────
+-- SALES & BUNDLE OFFERS (see db/sales_bundles.sql for the standalone migration)
+-- ─────────────────────────────────────────────
+ALTER TABLE products ADD COLUMN IF NOT EXISTS sale_price_cents INTEGER
+  CHECK (sale_price_cents IS NULL OR sale_price_cents >= 0);
+CREATE INDEX IF NOT EXISTS idx_products_sale ON products(sale_price_cents) WHERE sale_price_cents IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS bundles (
+  id           TEXT PRIMARY KEY,
+  name         TEXT NOT NULL,
+  description  TEXT,
+  image_url    TEXT,
+  price_cents  INTEGER NOT NULL CHECK (price_cents >= 0),
+  is_active    BOOLEAN NOT NULL DEFAULT true,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS bundle_items (
+  bundle_id   TEXT NOT NULL REFERENCES bundles(id) ON DELETE CASCADE,
+  product_id  TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  quantity    INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  PRIMARY KEY (bundle_id, product_id)
+);
+CREATE INDEX IF NOT EXISTS idx_bundle_items_bundle ON bundle_items(bundle_id);

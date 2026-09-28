@@ -14,9 +14,19 @@ function addToCart(productId) {
   const cart = getCart();
   const existing = cart.find(i => i.id === productId);
   if (existing) existing.qty += 1;
-  else cart.push({ id: productId, name: p.name, brand: p.brandName, priceCents: p.priceCents, qty: 1 });
+  else cart.push({ id: productId, name: p.name, brand: p.brandName, priceCents: p.finalCents, qty: 1 });
   saveCart(cart);
   showToast(p.name + ' added to cart ✓', 'success');
+}
+function addBundleToCart(bundleId) {
+  const b = (typeof getBundles === 'function' ? getBundles() : []).find(x => x.id === bundleId);
+  if (!b) { showToast('Bundle not found', 'error'); return; }
+  const cart = getCart();
+  const existing = cart.find(i => i.id === bundleId);
+  if (existing) existing.qty += 1;
+  else cart.push({ id: bundleId, bundle: true, name: b.name, brand: 'Bundle offer', priceCents: b.price_cents, qty: 1 });
+  saveCart(cart);
+  showToast(b.name + ' added to cart ✓', 'success');
 }
 function removeFromCart(productId) {
   saveCart(getCart().filter(i => i.id !== productId));

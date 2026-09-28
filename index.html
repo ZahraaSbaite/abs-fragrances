@@ -289,11 +289,24 @@
       width: calc((100cqw - (var(--fm-visible) - 1) * var(--fm-gap)) / var(--fm-visible));
     }
 
-    /* Tablet: 2 across. Phone: 3 compact cards across (manual mode). */
+    /* Cards per row by screen: laptop 4, large desktop 5, wide 6, small laptop/tablet 3, phone 3 compact. */
+    .featured-marquee { --fm-visible: 4; --fm-gap: 1.5rem; }
+    .featured-track .product-img-wrap { height: clamp(150px, 15vw, 260px); }
+
+    @media (min-width:1700px) {
+      .featured-marquee { --fm-visible: 5; }
+    }
+
+    @media (min-width:2200px) {
+      .featured-marquee { --fm-visible: 6; }
+    }
+
     @media (max-width:1024px) {
-      .featured-marquee {
-        --fm-visible: 2;
-      }
+      .featured-marquee { --fm-visible: 3; --fm-gap: 1.25rem; }
+    }
+
+    @media (max-width:820px) {
+      .featured-marquee { --fm-visible: 2; }
     }
 
     @media (max-width:768px) {
@@ -394,14 +407,7 @@
     <a href="all-perfumes.html">All Perfumes</a>
     <a href="categories.html">Categories</a>
     <a href="contact.html">Contact Us</a>
-    <div class="mobile-nav-divider"></div>
-    <form class="mobile-nav-admin" id="mobileNavAdminForm">
-      <label class="mobile-nav-admin-label">Admin</label>
-      <input type="password" id="mobileNavAdminPassword" placeholder="Password" autocomplete="current-password" />
-      <div class="mobile-nav-admin-err" id="mobileNavAdminErr"></div>
-      <button type="submit" class="mobile-nav-admin-btn">Log In</button>
-    </form>
-    <a href="https://wa.me/96178901234" data-wa-link>WhatsApp Order</a>
+<a href="https://wa.me/96178901234" data-wa-link>WhatsApp Order</a>
   </div>
 
   <!-- HERO -->
@@ -473,6 +479,14 @@
   </section>
 
   <!-- CATEGORIES -->
+  <!-- BUNDLE OFFERS (managed in Admin → Sales & Bundles; hidden when there are none) -->
+  <section class="featured bundles-section" id="bundles" style="display:none">
+    <div class="section-eyebrow fade-up">Special Offers</div>
+    <h2 class="section-title fade-up delay-1">Bundle Offers</h2>
+    <p class="section-sub fade-up delay-2">Get more for less — curated sets at a special price.</p>
+    <div class="bundles-grid" id="bundlesGrid"></div>
+  </section>
+
   <section class="collections" id="categories">
     <div class="section-eyebrow fade-up">Shop by Category</div>
     <h2 class="section-title fade-up delay-1">Our Collections</h2>
@@ -717,7 +731,7 @@
           <li><a href="https://www.instagram.com/absfragrances" target="_blank" data-ig-link>Instagram DM</a></li>
           <li><a href="#" target="_blank" data-fb-link style="display:none">Facebook</a></li>
           <li><a href="#" data-email-link style="display:none">Email</a></li>
-          <li><a href="admin/dashboard.html">Admin</a></li>
+          
         </ul>
       </div>
     </div>

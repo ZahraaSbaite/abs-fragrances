@@ -11,8 +11,11 @@ const reviewsRoutes = require('./src/routes/reviews.routes');
 const categoriesRoutes = require('./src/routes/categories.routes');
 const messagesRoutes = require('./src/routes/messages.routes');
 const settingsRoutes = require('./src/routes/settings.routes');
+const salesRoutes = require('./src/routes/sales.routes');
+const bundlesRoutes = require('./src/routes/bundles.routes');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Sets standard security headers (X-Content-Type-Options, X-Frame-Options,
 // etc.). CSP/COEP are disabled — this API serves only JSON, no HTML/assets,
@@ -57,6 +60,8 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/sales', salesRoutes);
+app.use('/api/bundles', bundlesRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {
