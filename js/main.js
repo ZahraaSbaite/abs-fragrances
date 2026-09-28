@@ -40,7 +40,7 @@ function getBrandName(brandId) {
 function productVisualHTML(p, emojiStyle, imgStyle) {
   const emoji = getBrandEmoji(p.brand);
   if (!p.image) return `<div class="product-emoji" style="${emojiStyle}">${emoji}</div>`;
-  return `<img src="${escapeAttr(p.image)}" alt="${escapeAttr(p.name)}" loading="lazy" style="${imgStyle}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />`
+  return `<img src="${escapeAttr(p.image)}" alt="${escapeAttr(p.name)}" loading="lazy" decoding="async" style="${imgStyle}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />`
     + `<div class="product-emoji" style="display:none;${emojiStyle}">${emoji}</div>`;
 }
 
@@ -470,8 +470,11 @@ function renderBundles() {
 }
 
 /* ─── Init (landing page) ─── */
-document.addEventListener('DOMContentLoaded', async () => {
-  await initProducts();
+document.addEventListener('bundles:updated', () => {
+  if (document.readyState !== 'loading') renderBundles();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
   updateNavbarAuth();
   renderBundles();
 
@@ -507,11 +510,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   window.fadeUpObserver = observer; // so content rendered later (e.g. reviews) can opt in too
 
-  renderFeaturedSection();
   initFeaturedMarquee();
   renderReviewsSection();
-  initReviewForm();
   initReviewsCarousel();
+  // Menu, search and scrolling work straight away; product sections fill in when the catalog arrives.
+  initProducts().then(() => {
+    renderFeaturedSection();
+    initReviewForm();
+  });
 
   // Modal close
   document.getElementById('productModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });

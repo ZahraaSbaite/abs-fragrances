@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./src/routes/auth.routes');
@@ -20,7 +21,12 @@ app.set('trust proxy', 1);
 // Sets standard security headers (X-Content-Type-Options, X-Frame-Options,
 // etc.). CSP/COEP are disabled — this API serves only JSON, no HTML/assets,
 // so the default policies would only add noise without protecting anything.
-app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+// crossOriginResourcePolicy must be 'cross-origin' so the Vercel-hosted site can display
+// the product images served from this API (helmet's default would block them).
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+
+// gzip/brotli-style compression for JSON responses (product lists shrink a lot).
+app.use(compression());
 
 // FRONTEND_ORIGIN can be a single origin or a comma-separated list, so the
 // site can be reachable from more than one domain during a hosting migration.

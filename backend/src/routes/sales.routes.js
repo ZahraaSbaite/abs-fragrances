@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { productCols, withImageUrls } = require('../imageUrls');
 
 const router = express.Router();
 
@@ -8,12 +9,12 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT p.*, b.name AS brand_name, b.logo AS brand_logo
+      `SELECT ${productCols('p')}, b.name AS brand_name, b.logo AS brand_logo
        FROM products p LEFT JOIN brands b ON b.id = p.brand_id
        WHERE p.sale_price_cents IS NOT NULL AND p.sale_price_cents < p.price_cents
        ORDER BY p.name`
     );
-    res.json({ products: result.rows });
+    res.json({ products: withImageUrls(result.rows, req) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch sales' });
