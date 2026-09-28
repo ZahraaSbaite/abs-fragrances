@@ -452,36 +452,33 @@ function renderBundles() {
     const regular = b.items.reduce((s, i) => s + i.price_cents * i.quantity, 0);
     const save = regular - b.price_cents;
     const pct = regular > 0 ? Math.round(save / regular * 100) : 0;
-    // Collage of the bundle's product photos — used when no bundle image is set or it fails to load
-    const itemImgs = b.items.filter(i => i.image_url).slice(0, 4);
-    const collage = itemImgs.length
-      ? `<div class="bundle-img bundle-collage n${itemImgs.length}">${itemImgs.map(i => `<img src="${escapeAttr(i.image_url)}" alt="${escapeAttr(i.name)}" loading="lazy" />`).join('')}</div>`
+    // Only the admin's bundle photo is shown; without one the banner is text-only.
+    const media = b.image_url
+      ? `<div class="bundle-media"><img class="bundle-img" src="${escapeAttr(b.image_url)}" alt="${escapeAttr(b.name)}" onerror="bundleImgFallback(this)" /></div>`
       : '';
-    const img = b.image_url
-      ? `<img class="bundle-img" src="${escapeAttr(b.image_url)}" alt="${escapeAttr(b.name)}" onerror="bundleImgFallback(this)" data-fallback="${escapeAttr(collage)}" />`
-      : collage;
     return `
-    <article class="bundle-card">
+    <article class="bundle-card${media ? '' : ' no-photo'}">
       <div class="bundle-body">
         <div class="bundle-eyebrow">Limited time bundle</div>
         <h3 class="bundle-name">${escapeHtml(b.name)}</h3>
         ${b.description ? `<p class="bundle-desc">${escapeHtml(b.description)}</p>` : ''}
-        <div class="bundle-items">${b.items.map(i => `${i.quantity > 1 ? i.quantity + ' × ' : ''}${escapeHtml(i.name)}`).join(' · ')}</div>
+        <div class="bundle-items">${b.items.map(i => `<span class="bundle-chip">${i.quantity > 1 ? i.quantity + ' × ' : ''}${escapeHtml(i.name)}</span>`).join('')}</div>
         <div class="bundle-price">
           <span class="bundle-now">${formatPrice(b.price_cents)}</span>
           ${save > 0 ? `<span class="bundle-old">${formatPrice(regular)}</span>` : ''}
           ${pct > 0 ? `<span class="bundle-save">Save ${pct}%</span>` : ''}
         </div>
-        <button class="bundle-btn" onclick="addBundleToCart('${b.id}')">Add bundle to cart</button>
+        <button class="bundle-btn" onclick="addBundleToCart('${b.id}')">Add bundle to cart <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       </div>
-      <div class="bundle-media">${img}</div>
+      ${media}
     </article>`;
   }).join('');
 }
 
 function bundleImgFallback(img) {
-  const html = img.dataset.fallback;
-  if (html) img.outerHTML = html; else img.remove();
+  const card = img.closest('.bundle-card');
+  img.parentElement.remove();
+  card?.classList.add('no-photo');
 }
 
 /* ─── Init (landing page) ─── */

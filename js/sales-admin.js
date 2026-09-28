@@ -264,7 +264,7 @@ function slFormRender() {
     <div class="full">
       <label>Bundle photo (shown on the right of the offer)</label>
       <div class="sl-photo">
-        <div class="sl-photo-prev">${f.image_url ? `<img src="${esc(f.image_url)}" alt="">` : '<span class="sl-sub">No photo — the perfumes’ photos are used</span>'}</div>
+        <div class="sl-photo-prev">${f.image_url ? `<img src="${esc(f.image_url)}" alt="">` : '<span class="sl-sub">No photo yet — upload one to show on the right of the offer</span>'}</div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
           <label class="btn btn-outline btn-sm" style="margin:0;cursor:pointer;text-transform:none;letter-spacing:0">${f.image_url ? 'Change photo' : 'Upload photo'}<input type="file" accept="image/*" hidden onchange="slBundlePhoto(this)" /></label>
           ${f.image_url ? '<button class="btn btn-danger btn-sm" onclick="SL.form.image_url=\'\';slFormRender()">Remove</button>' : ''}
@@ -321,6 +321,7 @@ async function slSaveBundle() {
   if (!f.name.trim()) { showToast('Give the bundle a name', 'error'); return; }
   if (price === null || price < 0) { showToast('Enter the bundle price', 'error'); return; }
   if (!f.items.length) { showToast('Add at least one perfume', 'error'); return; }
+  if (!f.image_url) { showToast('Upload a photo for the bundle', 'error'); return; }
   const body = { name: f.name.trim(), description: f.description.trim(), image_url: f.image_url.trim(), price_cents: price, is_active: f.is_active, items: f.items };
   try {
     const r = await fetch(`${API_BASE}/bundles${f.id ? '/' + f.id : ''}`, { method: f.id ? 'PUT' : 'POST', headers: slToken(), body: JSON.stringify(body) });
