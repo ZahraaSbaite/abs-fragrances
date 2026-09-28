@@ -1,4 +1,12 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "abs-fragrances.vercel.app" }],
+      "destination": "https://www.abs-fragrances.com/:path*",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/images/(.*)",

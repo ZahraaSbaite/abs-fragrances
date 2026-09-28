@@ -323,7 +323,7 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
 
 
 /* ─── SALES & BUNDLES ─── */
-.price-old { text-decoration: line-through; color: var(--muted); font-size: .85em; margin-right: .5rem; font-style: normal; }
+.price-old { font-weight: 400; text-decoration: line-through; color: var(--muted); font-size: .85em; margin-right: .5rem; font-style: normal; }
 .price-now { font-style: normal; }
 .badge-sale { background: #b3372f !important; color: #fff !important; }
 .filter-chip-sale { color: #b3372f; }

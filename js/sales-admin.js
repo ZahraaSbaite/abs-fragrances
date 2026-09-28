@@ -130,17 +130,34 @@ function slRows() {
       <td><div style="width:40px;height:48px;overflow:hidden;background:var(--bg)">${thumb}</div></td>
       <td style="font-size:.85rem;color:var(--navy)">${esc(p.name)}</td>
       <td style="font-size:.78rem">${esc(getBrandName(p.brand))}</td>
-      <td style="font-size:.82rem" class="${d.on ? 'sl-old' : ''}">${p.regularPrice}</td>
-      <td><input class="sl-price" type="number" min="0" step="0.01" id="slp-${p.id}" value="${esc(d.value)}" ${d.on ? '' : 'disabled'} oninput="SL.draft['${p.id}'].value=this.value" /></td>
-      <td>${p.onSale ? '<span class="sl-tag">On sale</span>' : '<span class="sl-tag off">Regular</span>'}</td>
+      <td style="font-size:.82rem" id="slo-${p.id}" class="${d.on ? 'sl-old' : ''}">${p.regularPrice}</td>
+      <td><input class="sl-price" type="number" min="0" step="0.01" id="slp-${p.id}" value="${esc(d.value)}" ${d.on ? '' : 'disabled'} oninput="SL.draft['${p.id}'].value=this.value;slStatus('${p.id}')" /></td>
+      <td id="sls-${p.id}">${slStatusTag(p)}</td>
     </tr>`;
   }).join('');
 }
 
+// Status = what customers see right now vs. what the admin has changed but not saved yet.
+function slStatusTag(p) {
+  const d = SL.draft[p.id] || { on: false, value: '' };
+  const savedValue = p.onSale ? (p.saleCents / 100).toFixed(2) : '';
+  const changed = d.on !== p.onSale || (d.on && slCents(d.value) !== slCents(savedValue));
+  if (changed) return '<span class="sl-tag off" style="background:rgba(196,162,112,.2);color:var(--gold)">Not saved</span>';
+  return p.onSale ? '<span class="sl-tag">On sale</span>' : '<span class="sl-tag off">Regular</span>';
+}
+
+function slStatus(id) {
+  const cell = document.getElementById('sls-' + id);
+  if (cell) cell.innerHTML = slStatusTag(PRODUCTS[id]);
+}
+
 function slToggle(id, on) {
   SL.draft[id].on = on;
+  if (!on) SL.draft[id].value = '';
   const inp = document.getElementById('slp-' + id);
-  if (inp) { inp.disabled = !on; if (on) inp.focus(); }
+  if (inp) { inp.disabled = !on; if (!on) inp.value = ''; if (on) inp.focus(); }
+  document.getElementById('slo-' + id)?.classList.toggle('sl-old', on);
+  slStatus(id);
 }
 
 function slApplyPct() {
@@ -183,6 +200,12 @@ async function slSaveSales() {
 
 async function slEndAll() {
   if (!confirm('End every sale? All perfumes go back to their regular price.')) return;
+  // Clear ticks and typed prices straight away, saved or not.
+  Object.keys(SL.draft).forEach(id => { SL.draft[id] = { on: false, value: '' }; });
+  const pct = document.getElementById('slPct');
+  if (pct) pct.value = '';
+  slRows();
+  if (!Object.values(PRODUCTS).some(p => p.onSale)) { showToast('All sales ended'); return; }
   try {
     const r = await fetch(`${API_BASE}/sales`, { method: 'DELETE', headers: slToken() });
     if (!r.ok) throw new Error((await r.json()).error || 'Failed');

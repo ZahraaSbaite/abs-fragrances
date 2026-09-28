@@ -14,7 +14,7 @@ function addToCart(productId) {
   const cart = getCart();
   const existing = cart.find(i => i.id === productId);
   if (existing) existing.qty += 1;
-  else cart.push({ id: productId, name: p.name, brand: p.brandName, priceCents: p.finalCents, qty: 1 });
+  else cart.push({ id: productId, name: p.name, brand: p.brandName, priceCents: p.finalCents, image: p.image || null, qty: 1 });
   saveCart(cart);
   showToast(p.name + ' added to cart ✓', 'success');
 }
@@ -52,6 +52,13 @@ function updateCartBadge() {
   badge.textContent = count;
   badge.style.display = count > 0 ? 'flex' : 'none';
 }
+/* Cart thumbnail: the product's photo (looked up live so older cart entries get it too), emoji fallback */
+function cartItemVisualHTML(item) {
+  const p = (typeof PRODUCTS !== 'undefined' && PRODUCTS[item.id]) || null;
+  const image = (p && p.image) || item.image;
+  if (!image) return `<span style="font-size:2rem">🧴</span>`;
+  return `<img src="${escapeAttr(image)}" alt="${escapeAttr(item.name)}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover" onerror="this.outerHTML='<span style=&quot;font-size:2rem&quot;>🧴</span>'" />`;
+}
 function renderCartDrawer() {
   const body = document.getElementById('cartBody');
   if (!body) return;
@@ -66,7 +73,7 @@ function renderCartDrawer() {
   }
   body.innerHTML = cart.map(item => `
     <div class="cart-item">
-      <div class="cart-item-img"><span style="font-size:2rem">🧴</span></div>
+      <div class="cart-item-img">${cartItemVisualHTML(item)}</div>
       <div class="cart-item-info">
         <div class="cart-item-coll">${item.brand || ''}</div>
         <div class="cart-item-name">${item.name}</div>

@@ -719,6 +719,7 @@
   font-size: 1.1rem;
   color: var(--ink);
   font-style: normal;
+  font-weight: 700;
 }
 
 .btn-add-cart {
@@ -1273,6 +1274,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .cart-item-info {

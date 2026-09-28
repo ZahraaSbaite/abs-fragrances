@@ -48,10 +48,11 @@ async function loadOrder(orderId) {
 }
 
 async function adminAddress() {
+  if (process.env.ADMIN_NOTIFY_EMAIL) return process.env.ADMIN_NOTIFY_EMAIL;
   try {
     const r = await pool.query("SELECT email FROM site_settings WHERE id = 'main'");
-    return r.rows[0]?.email || process.env.ADMIN_NOTIFY_EMAIL || null;
-  } catch { return process.env.ADMIN_NOTIFY_EMAIL || null; }
+    return r.rows[0]?.email || null;
+  } catch { return null; }
 }
 
 // New order → email to the admin with everything needed to fulfil it.
