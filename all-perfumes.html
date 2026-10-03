@@ -333,10 +333,6 @@
       updateNavbarAuth();
       updateCartBadge();
       window.addEventListener('scroll', () => document.getElementById('navbar')?.classList.toggle('scrolled', window.scrollY > 60), { passive: true });
-      document.getElementById('hamburger')?.addEventListener('click', () => {
-        document.getElementById('hamburger').classList.toggle('open');
-        document.getElementById('mobileNav')?.classList.toggle('open');
-      });
 
     });
   </script>

@@ -320,6 +320,9 @@ img.brand-section-logo { width:56px; height:56px; object-fit:contain; }
 @media(max-width:480px){
   .brands-grid { grid-template-columns:repeat(2,1fr); }
   .catalog-grid { grid-template-columns:1fr; }
+  .contact-section { padding:2.5rem 1rem; gap:2.5rem; }
+  .contact-form { padding:1.8rem 1.3rem; }
+  .contact-info h2 { font-size:1.7rem; }
 }
 
 
