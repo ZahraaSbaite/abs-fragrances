@@ -281,11 +281,13 @@
         el.classList.add('visible');
       });
     }
-    // Brand dropdown lists every brand in the catalog, so brands added in the admin appear straight away.
+    // Brand dropdown lists the brands that have perfumes (built from the catalog, so new brands appear once they have some).
     function fillBrandFilter(selected) {
       const sel = document.getElementById('brandFilter');
       const current = selected ?? sel.value;
+      const used = new Set(Object.values(getAllProductsCatalog()).map(p => p.brand));
       sel.innerHTML = '<option value="">All Brands</option>' + Object.values(BRANDS)
+        .filter(b => used.has(b.id))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(b => `<option value="${escapeAttr(b.id)}">${escapeHtml(b.name)}</option>`).join('');
       sel.value = [...sel.options].some(o => o.value === current) ? current : '';
