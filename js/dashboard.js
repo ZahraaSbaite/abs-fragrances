@@ -644,7 +644,7 @@ async function saveBrandForm() {
 function deleteBrand(id) {
   const b = BRANDS[id]; const name = b?.name || id;
   const count = Object.values(PRODUCTS).filter(p => p.brand === id).length;
-  const warning = count > 0 ? ` ${count} perfume(s) using this brand will keep their listing but lose their brand tag.` : '';
+  const warning = count > 0 ? ` Its ${count} perfume${count > 1 ? 's' : ''} will be deleted too. This cannot be undone.` : '';
   confirm2('Delete "' + name + '"?', 'This brand will be permanently removed.' + warning, async () => {
     try {
       const res = await fetch(`${API_BASE}/products/brands/${id}`, {
@@ -653,7 +653,7 @@ function deleteBrand(id) {
       });
       const data = await res.json();
       if (!res.ok) { showToast(data.error || 'Failed to delete brand', 'error'); return; }
-      showToast('"' + name + '" deleted');
+      showToast('"' + name + '" deleted' + (data.deletedProducts ? ` with ${data.deletedProducts} perfume${data.deletedProducts > 1 ? 's' : ''}` : ''));
       await loadProductsData();
       renderBrands();
     } catch (err) { showToast('Could not reach the server.', 'error'); }

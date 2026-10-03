@@ -10,12 +10,13 @@ let _productsPromise = null;
 // attempt is cut off and retried (a sleeping server gets ~a minute in total to wake up).
 // Once it has answered, the body gets up to `bodyTimeout` ms — a big response on a slow
 // connection must be allowed to finish, not be cut off and retried from scratch.
-async function fetchJson(path, { timeout = 20000, bodyTimeout = 120000, retries = 2 } = {}) {
+async function fetchJson(path, { timeout = 20000, bodyTimeout = 120000, retries = 2, fresh = false } = {}) {
   for (let attempt = 0; ; attempt++) {
     const ctrl = new AbortController();
     let timer = setTimeout(() => ctrl.abort(), timeout);
     try {
-      const r = await fetch(`${API_BASE}${path}`, { signal: ctrl.signal });
+      // fresh: skip the browser's HTTP cache (the admin must see its own changes immediately)
+      const r = await fetch(`${API_BASE}${path}`, { signal: ctrl.signal, cache: fresh ? 'no-store' : 'default' });
       clearTimeout(timer);
       timer = setTimeout(() => ctrl.abort(), bodyTimeout);
       if (!r.ok) throw new Error(`${path} → ${r.status}`);
@@ -82,8 +83,8 @@ function setBundles(list) {
   document.dispatchEvent(new CustomEvent('bundles:updated'));
 }
 
-async function fetchCatalog() {
-  const [brandsData, productsData] = await Promise.all([fetchJson('/products/brands'), fetchJson('/products')]);
+async function fetchCatalog(fresh) {
+  const [brandsData, productsData] = await Promise.all([fetchJson('/products/brands', { fresh }), fetchJson('/products', { fresh })]);
   return { brands: brandsData.brands || [], products: productsData.products || [] };
 }
 
@@ -91,7 +92,7 @@ function initProducts(force) {
   if (_productsPromise && !force) return _productsPromise;
 
   const cached = force ? null : readCatalogCache();
-  const refresh = fetchCatalog();
+  const refresh = fetchCatalog(force);
   const bundles = fetchJson('/bundles').then(d => d.bundles || [], () => null);
 
   // Save brands+products+bundles together once all have come back.

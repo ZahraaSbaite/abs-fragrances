@@ -110,16 +110,24 @@ router.put('/brands/:id', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// DELETE /api/products/brands/:id — admin only. Products referencing this
-// brand keep existing (brand_id is set to NULL, per the schema's ON DELETE SET NULL).
+// DELETE /api/products/brands/:id — admin only. Deletes the brand AND all its perfumes,
+// in one transaction. Past orders are unaffected (order lines keep their own name/price);
+// the perfumes drop out of any bundle they were in.
 router.delete('/brands/:id', requireAuth, requireAdmin, async (req, res) => {
+  const client = await pool.connect();
   try {
-    const result = await pool.query('DELETE FROM brands WHERE id = $1 RETURNING id', [req.params.id]);
-    if (!result.rows[0]) return res.status(404).json({ error: 'Brand not found' });
-    res.json({ deleted: req.params.id });
+    await client.query('BEGIN');
+    const products = await client.query('DELETE FROM products WHERE brand_id = $1 RETURNING id', [req.params.id]);
+    const result = await client.query('DELETE FROM brands WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Brand not found' }); }
+    await client.query('COMMIT');
+    res.json({ deleted: req.params.id, deletedProducts: products.rowCount });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error(err);
     res.status(500).json({ error: 'Failed to delete brand' });
+  } finally {
+    client.release();
   }
 });
 
