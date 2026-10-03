@@ -345,7 +345,7 @@
         return;
       }
       grid.innerHTML = brands.map(b => `
-    <div class="brand-card" data-brand="${b.id}" onclick="showBrandPerfumes('${b.id}')">
+    <div class="brand-card" data-brand="${escapeAttr(b.id)}" onclick="showBrandPerfumes(this.dataset.brand)">
       ${brandLogoHTML(b, 'brand-logo')}
       <div class="brand-name">${b.name}</div>
       <div class="brand-count">${countForBrandAndGender(b.id, currentGender)} perfumes</div>
@@ -397,7 +397,16 @@
 
       renderBrands();
 
-      if (bParam) { showBrandPerfumes(bParam); }
+      // A brand link may point at a brand the saved catalog doesn't know yet — open it once the latest catalog arrives.
+      let pendingBrand = null;
+      if (bParam) { if (BRANDS[bParam]) showBrandPerfumes(bParam); else pendingBrand = bParam; }
+
+      // Pages first show the saved catalog; redraw when the latest one arrives (e.g. a newly added brand).
+      document.addEventListener('catalog:updated', () => {
+        if (pendingBrand && BRANDS[pendingBrand]) { const b = pendingBrand; pendingBrand = null; showBrandPerfumes(b); }
+        else if (currentBrand && BRANDS[currentBrand]) showBrandPerfumes(currentBrand);
+        else applySearch();
+      });
 
       document.querySelectorAll('.gender-tab').forEach(tab => {
         tab.addEventListener('click', () => {

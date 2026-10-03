@@ -169,14 +169,6 @@
       <div class="catalog-bar-right">
         <select class="sort-select" id="brandFilter" onchange="applyFilters()">
           <option value="">All Brands</option>
-          <option value="rasasi">Rasasi</option>
-          <option value="lattafa">Lattafa</option>
-          <option value="rueBroca">Rue Broca</option>
-          <option value="frenchAvenue">French Avenue</option>
-          <option value="assaf">Assaf</option>
-          <option value="afnan">Afnan</option>
-          <option value="rayhaan">Rayhaan</option>
-          <option value="alHambra">Al Hambra</option>
         </select>
         <span class="catalog-count" id="catalogCount">— perfumes</span>
       </div>
@@ -289,6 +281,25 @@
         el.classList.add('visible');
       });
     }
+    // Brand dropdown is built from the brands in the catalog, so brands added in the admin appear.
+    function fillBrandFilter(selected) {
+      const sel = document.getElementById('brandFilter');
+      const current = selected ?? sel.value;
+      const used = new Set(Object.values(getAllProductsCatalog()).map(p => p.brand));
+      sel.innerHTML = '<option value="">All Brands</option>' + Object.values(BRANDS)
+        .filter(b => used.has(b.id))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(b => `<option value="${escapeAttr(b.id)}">${escapeHtml(b.name)}</option>`).join('');
+      sel.value = [...sel.options].some(o => o.value === current) ? current : '';
+    }
+
+    // Sale chip only shows while at least one perfume is on sale.
+    function updateSaleChip() {
+      const hasSale = Object.values(getAllProductsCatalog()).some(p => p.onSale);
+      document.querySelector('.filter-chip-sale').style.display = hasSale ? '' : 'none';
+      return hasSale;
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       await initProducts();
       const params = new URLSearchParams(window.location.search);
@@ -296,16 +307,16 @@
       let gParam = params.get('gender');
       const bParam = params.get('brand');
 
-      // Sale chip only shows while at least one perfume is on sale.
-      const hasSale = Object.values(getAllProductsCatalog()).some(p => p.onSale);
-      document.querySelector('.filter-chip-sale').style.display = hasSale ? '' : 'none';
+      const hasSale = updateSaleChip();
       if (gParam === 'Sale' && !hasSale) gParam = null;
 
       if (qParam) { document.getElementById('catalogSearch').value = qParam; }
       if (gParam) { activeGender = gParam; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.gender === gParam)); }
-      if (bParam) { document.getElementById('brandFilter').value = bParam; }
 
+      fillBrandFilter(bParam);
       applyFilters();
+      // Pages first show the saved catalog; redraw when the latest one arrives (new brands, perfumes, sales).
+      document.addEventListener('catalog:updated', () => { fillBrandFilter(); updateSaleChip(); applyFilters(); });
 
       document.querySelectorAll('.filter-chip').forEach(chip => {
         chip.addEventListener('click', () => {
