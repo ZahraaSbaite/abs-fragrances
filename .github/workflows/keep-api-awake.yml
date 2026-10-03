@@ -1,6 +1,11 @@
 # Render's free plan puts the API to sleep after ~15 minutes without traffic, and the next
 # visitor then waits 30-60s for it to wake up. Pinging it every 10 minutes keeps it awake.
 # (GitHub may delay scheduled runs a few minutes; that's fine here.)
+#
+# The same run refreshes the saved copy of the home page's "Our Signature Scents"
+# (js/featured-snapshot.js + images/featured/), which lets that section show instantly
+# even when the API is asleep. It commits only when the featured perfumes changed.
+# Run it by hand from the Actions tab after changing Signature Scents in the admin.
 name: Keep API awake
 
 on:
@@ -8,10 +13,35 @@ on:
     - cron: '*/10 * * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: keep-api-awake
+  cancel-in-progress: false
+
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     steps:
-      - name: Ping health endpoint
-        run: curl -fsS --retry 3 --retry-delay 20 --max-time 90 https://abs-fragrances.onrender.com/api/health
+      - name: Ping API (wakes the server and the database)
+        run: curl -fsS -o /dev/null --retry 3 --retry-delay 20 --max-time 90 https://abs-fragrances.onrender.com/api/products/brands
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Refresh Signature Scents snapshot
+        run: node .github/scripts/build-featured-snapshot.mjs
+
+      - name: Commit if changed
+        run: |
+          git add -A js/featured-snapshot.js images/featured
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update Signature Scents snapshot"
+          git push

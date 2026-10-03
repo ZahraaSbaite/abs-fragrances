@@ -72,6 +72,7 @@ function applyCatalog(c) {
   BRANDS = Object.fromEntries((c.brands || []).map(b => [b.id, b]));
   PRODUCTS = Object.fromEntries((c.products || []).map(p => [p.id, mapProduct(p)]));
   if (c.bundles) setBundles(c.bundles);
+  document.dispatchEvent(new CustomEvent('catalog:updated'));
 }
 
 // Bundles load on their own, so products never wait on them. Pages that show bundles
@@ -107,12 +108,16 @@ function initProducts(force) {
     return _productsPromise;
   }
 
+  // First visit (no cache): the home page ships a saved copy of the featured perfumes
+  // (js/featured-snapshot.js) so "Our Signature Scents" shows before the API answers.
+  if (window.FEATURED_SNAPSHOT) applyCatalog(window.FEATURED_SNAPSHOT);
+
   _productsPromise = (async () => {
     try {
       applyCatalog(await refresh);
     } catch (err) {
       console.error('Failed to load products from API:', err);
-      BRANDS = {}; PRODUCTS = {};
+      if (!window.FEATURED_SNAPSHOT) { BRANDS = {}; PRODUCTS = {}; }
     }
     return PRODUCTS;
   })();
@@ -122,6 +127,16 @@ function initProducts(force) {
 // Start downloading right away instead of waiting for DOMContentLoaded.
 // (Skipped on the admin dashboard, which manages its own loading.)
 if (!location.pathname.includes('/admin/')) initProducts();
+
+// Photo for a featured card: the copy saved in the site (fast, no API needed) while it
+// is still the same photo as the live one; otherwise the live photo.
+const _snapshotImages = Object.fromEntries(((window.FEATURED_SNAPSHOT || {}).products || [])
+  .filter(p => p.image_v).map(p => [p.id, p]));
+function featuredImage(p) {
+  const s = _snapshotImages[p.id];
+  if (s && p.image && (p.image === s.image_url || p.image.includes('v=' + s.image_v))) return s.image_url;
+  return p.image;
+}
 
 function getAllProductsCatalog() { return PRODUCTS; }
 function getBundles() { return BUNDLES; }

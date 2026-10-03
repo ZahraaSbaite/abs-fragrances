@@ -79,8 +79,9 @@ function featuredBgClass(p) {
 function featuredCardHTML(p, isClone) {
   const brandName = getBrandName(p.brand);
   const emoji = getBrandEmoji(p.brand);
-  const visual = p.image
-    ? `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" style="width:100%;height:100%;object-fit:cover" />`
+  const img = featuredImage(p);
+  const visual = img
+    ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(p.name)}" style="width:100%;height:100%;object-fit:cover" />`
     : `<div class="product-emoji" style="font-size:3.8rem;filter:drop-shadow(0 6px 20px rgba(22,56,70,.15))">${emoji}</div>`;
   const tab = isClone ? ' tabindex="-1"' : '';
   return `
@@ -138,11 +139,22 @@ function renderFeaturedWindow() {
   grid.innerHTML = `<div class="featured-track" style="display:flex;flex-wrap:nowrap;width:max-content"${duration}>${cards}${clones}</div>`;
 }
 
+// Rendered as soon as any data is at hand (saved copy, cache, then live data). Skips
+// re-rendering when nothing visible changed, so the marquee doesn't restart mid-scroll.
+let _featuredKey = null;
 function renderFeaturedSection() {
   if (!document.getElementById('featuredGrid')) return;
-  _featuredList = Object.values(PRODUCTS).filter(p => p.isFeatured);
+  const list = Object.values(PRODUCTS).filter(p => p.isFeatured);
+  const key = JSON.stringify(list.map(p => [p.id, p.name, p.price, p.regularPrice, p.badge, p.shortDesc, p.brand, p.gender, p.isInspired, featuredImage(p)]));
+  if (key === _featuredKey) return;
+  _featuredKey = key;
+  _featuredList = list;
   renderFeaturedWindow();
 }
+
+document.addEventListener('catalog:updated', () => {
+  if (document.readyState !== 'loading') renderFeaturedSection();
+});
 
 function initFeaturedMarquee() {
   const grid = document.getElementById('featuredGrid');
@@ -523,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.fadeUpObserver = observer; // so content rendered later (e.g. reviews) can opt in too
 
   initFeaturedMarquee();
+  if (Object.keys(PRODUCTS).length) renderFeaturedSection(); // saved copy or cache — no waiting on the API
   renderReviewsSection();
   initReviewsCarousel();
   // Menu, search and scrolling work straight away; product sections fill in when the catalog arrives.
