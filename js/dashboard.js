@@ -1150,7 +1150,7 @@ async function saveSiteSettingsForm() {
 /* ── VIEW ROUTER ── */
 let currentView = 'overview';
 let viewToken = 0; // bumped on every switchView call; a stale (superseded) call's render is dropped
-const VIEW_TITLES = { overview: 'Dashboard', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', sales: 'Sales & Bundles', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile', siteSettings: 'Social & Contact' };
+const VIEW_TITLES = { overview: 'Dashboard', analytics: 'Analytics', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', sales: 'Sales & Bundles', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile', siteSettings: 'Social & Contact' };
 async function switchView(view) {
   const myToken = ++viewToken;
   currentView = view;
@@ -1163,6 +1163,7 @@ async function switchView(view) {
   }
 
   if (view === 'overview') { await Promise.all([loadOrdersData(), loadProductsData(), loadMessagesData()]); if (myToken !== viewToken) return; renderOverview(); }
+  else if (view === 'analytics') { await renderAnalyticsView(); }
   else if (view === 'orders') { await loadOrdersData(); if (myToken !== viewToken) return; renderOrders(); }
   else if (view === 'products') { await loadProductsData(); if (myToken !== viewToken) return; renderProducts(); }
   else if (view === 'addProduct') { await loadProductsData(); if (myToken !== viewToken) return; openProductForm(); switchView('products'); return; }

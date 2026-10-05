@@ -202,3 +202,14 @@ CREATE TABLE IF NOT EXISTS bundle_items (
   PRIMARY KEY (bundle_id, product_id)
 );
 CREATE INDEX IF NOT EXISTS idx_bundle_items_bundle ON bundle_items(bundle_id);
+
+-- VISITOR ANALYTICS (one row per page view; also created automatically by src/routes/analytics.routes.js)
+CREATE TABLE IF NOT EXISTS site_visits (
+  id          BIGSERIAL PRIMARY KEY,
+  visitor_id  TEXT NOT NULL,          -- random id kept in the visitor's browser (no personal data)
+  path        TEXT,
+  source      TEXT,                   -- Instagram / Google / Direct / ...; NULL for navigation within the site
+  device      TEXT,                   -- Mobile / Tablet / Desktop
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_site_visits_created ON site_visits(created_at);

@@ -14,6 +14,7 @@ const messagesRoutes = require('./src/routes/messages.routes');
 const settingsRoutes = require('./src/routes/settings.routes');
 const salesRoutes = require('./src/routes/sales.routes');
 const bundlesRoutes = require('./src/routes/bundles.routes');
+const analyticsRoutes = require('./src/routes/analytics.routes');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -58,6 +59,8 @@ app.use('/api/auth/login', loginLimiter);
 app.post('/api/orders', writeLimiter);
 app.post('/api/reviews', writeLimiter);
 app.post('/api/messages', writeLimiter);
+// Visit tracking: one beacon per page view — plenty for real browsing, caps scripted floods.
+app.post('/api/analytics/visit', rateLimit({ windowMs: 15 * 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productsRoutes);
@@ -68,6 +71,7 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/bundles', bundlesRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {

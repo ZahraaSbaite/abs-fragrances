@@ -776,6 +776,14 @@
             <rect x="3" y="14" width="7" height="7" />
           </svg>Dashboard
         </button>
+        <button class="sidebar-link" data-view="analytics">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="4" y1="20" x2="4" y2="12" />
+            <line x1="10" y1="20" x2="10" y2="6" />
+            <line x1="16" y1="20" x2="16" y2="10" />
+            <line x1="22" y1="20" x2="2" y2="20" />
+          </svg>Analytics
+        </button>
         <div class="sidebar-section-label">Orders</div>
         <button class="sidebar-link" data-view="orders">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -889,10 +897,10 @@
           '<p style="padding:3rem;font-family:sans-serif;color:#c0392b">Could not reach the admin API. Is the backend running?</p>';
         return;
       }
-      for (const src of ['../js/products.js', '../js/orders.js', '../js/reviews.js', '../js/messages.js', '../js/sales-admin.js', '../js/dashboard.js']) {
+      for (const src of ['../js/products.js', '../js/orders.js', '../js/reviews.js', '../js/messages.js', '../js/sales-admin.js', '../js/analytics-admin.js', '../js/dashboard.js']) {
         await new Promise((resolve, reject) => {
           const s = document.createElement('script');
-          s.src = src + '?v=20260928'; // version tag: forces browsers to fetch the latest files
+          s.src = src + '?v=20261005b'; // version tag: forces browsers to fetch the latest files
           s.onload = resolve;
           s.onerror = reject;
           document.body.appendChild(s);
