@@ -2277,3 +2277,10 @@
     flex-direction: column;
   }
 }
+/* Sold-out state */
+.btn-add-cart:disabled,
+.modal-actions-row .btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
