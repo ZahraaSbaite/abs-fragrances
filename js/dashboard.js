@@ -1004,7 +1004,7 @@ function deleteMessageRow(id) {
 
 /* ── ADMIN PROFILE ── */
 function renderProfile() {
-  const s = session || {};
+  const s = getSession() || {};
   const initials = (s.name || 'A').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   document.getElementById('dashContent').innerHTML = `
     <div class="profile-card">
@@ -1017,7 +1017,7 @@ function renderProfile() {
         </div>
       </div>
       <div class="profile-form">
-        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">Account Credentials</div>
+        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">Account Details</div>
         <div class="form-group">
           <label class="form-label">Full Name</label>
           <input class="form-input" id="pfName" value="${esc(s.name || '')}"/>
@@ -1026,11 +1026,25 @@ function renderProfile() {
           <label class="form-label">Email Address</label>
           <input class="form-input" id="pfEmail" type="email" value="${esc(s.email || '')}"/>
         </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input class="form-input" id="pfPhone" type="tel" placeholder="+96170123456" value="${esc(s.phone || '')}"/>
+          <span class="form-hint">Optional. With country code.</span>
+        </div>
         <div class="profile-form-divider"></div>
+        <div style="font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)">Change Password</div>
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input class="form-input" id="pfCurrent" type="password" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
         <div class="form-group">
           <label class="form-label">New Password</label>
-          <input class="form-input" id="pfPassword" type="password" placeholder="••••••••"/>
-          <span class="form-hint">Leave blank to keep your current password.</span>
+          <input class="form-input" id="pfPassword" type="password" placeholder="At least 8 characters" autocomplete="new-password"/>
+          <span class="form-hint">Leave the password fields blank to keep your current password.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Repeat New Password</label>
+          <input class="form-input" id="pfPassword2" type="password" placeholder="••••••••" autocomplete="new-password"/>
         </div>
         <div id="pfError" style="color:var(--danger);font-family:var(--sans);font-size:.78rem;display:none"></div>
         <div class="profile-actions">
@@ -1043,25 +1057,174 @@ function renderProfile() {
 async function saveProfile() {
   const name = document.getElementById('pfName').value.trim();
   const email = document.getElementById('pfEmail').value.trim();
+  const phone = document.getElementById('pfPhone').value.trim();
+  const current = document.getElementById('pfCurrent').value;
   const password = document.getElementById('pfPassword').value;
+  const password2 = document.getElementById('pfPassword2').value;
   const errEl = document.getElementById('pfError');
   const btn = document.getElementById('pfSaveBtn');
+  const fail = (m) => { errEl.textContent = m; errEl.style.display = 'block'; };
   errEl.style.display = 'none';
 
-  if (!name || !email) { errEl.textContent = 'Name and email are required.'; errEl.style.display = 'block'; return; }
-  if (password && password.length < 6) { errEl.textContent = 'New password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+  if (!name || !email) return fail('Name and email are required.');
+  if (password || password2 || current) {
+    if (!current) return fail('Enter your current password to change it.');
+    if (password.length < 8) return fail('New password must be at least 8 characters.');
+    if (password !== password2) return fail('The two new passwords do not match.');
+  }
 
   btn.disabled = true; btn.textContent = 'Saving...';
-  const result = await updateProfile({ name, email, password: password || undefined });
+  const result = await updateProfile({
+    name, email,
+    phone: phone || undefined,
+    password: password || undefined,
+    current_password: current || undefined,
+  });
   btn.disabled = false; btn.textContent = 'Save Changes';
 
-  if (!result.ok) { errEl.textContent = result.error; errEl.style.display = 'block'; return; }
+  if (!result.ok) return fail(result.error);
 
   document.getElementById('sidebarName').textContent = result.user.name;
   document.getElementById('sidebarEmail').textContent = result.user.email;
   document.getElementById('sidebarInitials').textContent = result.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   showToast('Profile updated!', 'success');
   renderProfile();
+}
+
+/* ── MANAGE ADMINS ── */
+let adminsCache = [];
+
+// Small modal form. onSubmit(values) returns an error message (dialog stays open) or null (success → closes).
+function adminDialog({ title, note, fields, submitLabel, danger, onSubmit }) {
+  return new Promise((resolve) => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(13,34,48,.7);z-index:6000;display:flex;align-items:center;justify-content:center;padding:1rem';
+    const inputs = fields.map(f => `
+      <div class="form-group">
+        <label class="form-label">${esc(f.label)}</label>
+        <input class="form-input" name="${f.name}" type="${f.type || 'text'}" placeholder="${esc(f.placeholder || '')}" autocomplete="${f.autocomplete || 'off'}" ${f.optional ? '' : 'required'}/>
+        ${f.hint ? `<span class="form-hint">${esc(f.hint)}</span>` : ''}
+      </div>`).join('');
+    ov.innerHTML = `
+      <form style="background:#fff;padding:1.8rem;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:.9rem">
+        <h3 style="margin:0;font-family:var(--serif);font-weight:400;font-size:1.3rem;color:var(--navy)">${esc(title)}</h3>
+        ${note ? `<p style="margin:0;font-family:var(--sans);font-size:.8rem;color:var(--muted);line-height:1.5">${esc(note)}</p>` : ''}
+        ${inputs}
+        <div data-err style="color:var(--danger);font-family:var(--sans);font-size:.78rem;display:none"></div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+          <button type="button" class="btn btn-outline btn-sm" data-cancel>Cancel</button>
+          <button type="submit" class="btn ${danger ? 'btn-danger' : 'btn-gold'} btn-sm">${esc(submitLabel || 'Confirm')}</button>
+        </div>
+      </form>`;
+    document.body.appendChild(ov);
+    const form = ov.querySelector('form');
+    const errEl = form.querySelector('[data-err]');
+    const submitBtn = form.querySelector('button[type=submit]');
+    const close = (result) => { ov.remove(); resolve(result); };
+    form.querySelector('[data-cancel]').onclick = () => close(false);
+    ov.addEventListener('mousedown', (e) => { if (e.target === ov) close(false); });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errEl.style.display = 'none';
+      submitBtn.disabled = true;
+      const err = await onSubmit(Object.fromEntries(new FormData(form)));
+      if (err) { errEl.textContent = err; errEl.style.display = 'block'; submitBtn.disabled = false; return; }
+      close(true);
+    });
+    form.querySelector('input').focus();
+  });
+}
+
+async function renderAdmins(token) {
+  const box = document.getElementById('dashContent');
+  const r = await authApi('GET', '/admins');
+  if (token !== undefined && token !== viewToken) return;
+  if (!r.ok) {
+    box.innerHTML = `<div style="padding:3rem;color:var(--danger);font-family:var(--sans);font-size:.85rem">${esc(r.error)}</div>`;
+    return;
+  }
+  adminsCache = r.data.admins || [];
+  const me = (getSession() || {}).id;
+  const rows = adminsCache.map(a => `
+    <tr>
+      <td>${esc(a.name)}${a.id === me ? ' <span style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-left:.4rem">You</span>' : ''}</td>
+      <td>${esc(a.email)}</td>
+      <td>${a.phone ? esc(a.phone) : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${new Date(a.created_at).toLocaleDateString()}</td>
+      <td>${a.id === me
+        ? '<span style="font-size:.72rem;color:var(--muted)">Use Admin Profile</span>'
+        : `<button class="btn btn-outline btn-sm" onclick="openAdminPasswordForm('${a.id}')">Reset Password</button>
+           <button class="btn btn-danger btn-sm" onclick="removeAdmin('${a.id}')">Remove</button>`}</td>
+    </tr>`).join('');
+  box.innerHTML = `
+    <div style="background:var(--white);box-shadow:0 1px 8px rgba(22,56,70,.05)">
+      <div class="admin-filter-bar" style="justify-content:space-between">
+        <span style="font-family:var(--sans);font-size:.72rem;color:var(--muted)">${adminsCache.length} admin${adminsCache.length === 1 ? '' : 's'}</span>
+        <button class="btn btn-gold btn-sm" onclick="openAddAdminForm()">+ Add Admin</button>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Added</th><th>Actions</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+async function openAddAdminForm() {
+  const done = await adminDialog({
+    title: 'Add Admin',
+    note: 'The new admin can log in right away. If they forget their password, a reset code is emailed to them.',
+    submitLabel: 'Add Admin',
+    fields: [
+      { name: 'name', label: 'Full Name', autocomplete: 'off' },
+      { name: 'email', label: 'Email', type: 'email' },
+      { name: 'phone', label: 'Phone Number (optional)', type: 'tel', placeholder: '+96170123456', hint: 'With country code.', optional: true },
+      { name: 'password', label: 'Temporary Password', type: 'password', autocomplete: 'new-password', hint: 'At least 8 characters. They can change it from their profile.' },
+      { name: 'current_password', label: 'Your Password', type: 'password', autocomplete: 'current-password', hint: 'Confirms it is really you.' },
+    ],
+    onSubmit: async (v) => {
+      if (v.password.length < 8) return 'The temporary password must be at least 8 characters.';
+      const r = await authApi('POST', '/admins', v);
+      return r.ok ? null : r.error;
+    },
+  });
+  if (done) { showToast('Admin added ✓', 'success'); renderAdmins(); }
+}
+
+async function removeAdmin(id) {
+  const a = adminsCache.find(x => x.id === id);
+  if (!a) return;
+  const done = await adminDialog({
+    title: 'Remove Admin',
+    note: `Remove ${a.name} (${a.email})? They are logged out immediately and can no longer sign in.`,
+    submitLabel: 'Remove',
+    danger: true,
+    fields: [{ name: 'current_password', label: 'Your Password', type: 'password', autocomplete: 'current-password' }],
+    onSubmit: async (v) => {
+      const r = await authApi('DELETE', `/admins/${id}`, { current_password: v.current_password });
+      return r.ok ? null : r.error;
+    },
+  });
+  if (done) { showToast('Admin removed', 'success'); renderAdmins(); }
+}
+
+async function openAdminPasswordForm(id) {
+  const a = adminsCache.find(x => x.id === id);
+  if (!a) return;
+  const done = await adminDialog({
+    title: 'Reset Password',
+    note: `Set a new password for ${a.name}. They are logged out everywhere and must sign in with it.`,
+    submitLabel: 'Set Password',
+    fields: [
+      { name: 'new_password', label: 'New Password', type: 'password', autocomplete: 'new-password', hint: 'At least 8 characters.' },
+      { name: 'current_password', label: 'Your Password', type: 'password', autocomplete: 'current-password' },
+    ],
+    onSubmit: async (v) => {
+      if (v.new_password.length < 8) return 'The new password must be at least 8 characters.';
+      const r = await authApi('PUT', `/admins/${id}/password`, v);
+      return r.ok ? null : r.error;
+    },
+  });
+  if (done) showToast('Password changed ✓', 'success');
 }
 
 /* ── SOCIAL & CONTACT (WhatsApp number + social links, shown site-wide) ── */
@@ -1150,7 +1313,7 @@ async function saveSiteSettingsForm() {
 /* ── VIEW ROUTER ── */
 let currentView = 'overview';
 let viewToken = 0; // bumped on every switchView call; a stale (superseded) call's render is dropped
-const VIEW_TITLES = { overview: 'Dashboard', analytics: 'Analytics', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', sales: 'Sales & Bundles', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile', siteSettings: 'Social & Contact' };
+const VIEW_TITLES = { overview: 'Dashboard', analytics: 'Analytics', orders: 'Orders', products: 'Manage Perfumes', addProduct: 'Add New Perfume', brands: 'Manage Brands', signatureScents: 'Signature Scents', sales: 'Sales & Bundles', reviews: 'Customer Reviews', messages: 'Customer Messages', profile: 'Admin Profile', admins: 'Manage Admins', siteSettings: 'Social & Contact' };
 async function switchView(view) {
   const myToken = ++viewToken;
   currentView = view;
@@ -1173,6 +1336,7 @@ async function switchView(view) {
   else if (view === 'reviews') { await loadReviewsData(); if (myToken !== viewToken) return; renderReviews(); }
   else if (view === 'messages') { await loadMessagesData(); if (myToken !== viewToken) return; renderMessages(); }
   else if (view === 'profile') { renderProfile(); }
+  else if (view === 'admins') { await renderAdmins(myToken); }
   else if (view === 'siteSettings') { await loadSiteSettingsData(); if (myToken !== viewToken) return; renderSiteSettings(); }
 }
 
